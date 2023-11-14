@@ -1,6 +1,6 @@
-const {ORM} = require('kohanajs');
+import { ORM } from '@lionrockjs/central';
 
-class PageTag extends ORM{
+export default class PageTag extends ORM{
   page_id = null;
   tag_id = null;
   weight = 5;

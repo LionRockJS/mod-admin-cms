@@ -1,6 +1,6 @@
-const {ORM} = require('kohanajs');
+import { ORM } from '@lionrockjs/central';
 
-class PageKeyword extends ORM{
+export default class PageKeyword extends ORM {
   page_id = null;
   language_code = null;
   name = null;

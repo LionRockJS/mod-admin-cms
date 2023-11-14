@@ -1,11 +1,13 @@
-require('kohanajs').addNodeModule(__dirname);
+import url from "node:url";
+const dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
+export default {dirname}
 
-const ControllerAdminPage = require('./classes/controller/admin/Page');
-const ControllerAdminContent = require('./classes/controller/admin/Content');
-const ControllerAdminTag = require('./classes/controller/admin/Tag');
-const HelperPageText = require('./classes/helper/PageText');
+import ControllerAdminPage from "./classes/controller/admin/Page";
+import ControllerAdminContent from "./classes/controller/admin/Content";
+import ControllerAdminTag from "./classes/controller/admin/Tag";
+import HelperPageText from "./classes/helper/PageText";
 
-module.exports = {
+export {
   ControllerAdminPage,
   ControllerAdminContent,
   ControllerAdminTag,

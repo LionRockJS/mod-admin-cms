@@ -1,6 +1,6 @@
-const {ORM} = require('kohanajs');
+import { ORM } from '@lionrockjs/central';
 
-class Tag extends ORM{
+export default class Tag extends ORM{
   tag_type_id = null;
   parent_tag = null;
   name = null;
