@@ -1,0 +1,25 @@
+<div class="page-tag-form my-2" data-page="{{ page_id }}" data-tag-type="{{ tag_group }}">
+    <div class="row toggle-input-tag" role="button">
+        <div class="col-8">
+            <h5><label for="input_tag_{{ tag_group }}"> {{ label }}</label></h5>
+        </div>
+        <div class="col-4 text-end">
+            <i class="fas fa-search-plus"></i>
+        </div>
+    </div>
+
+    <div>
+        <input id="input_tag_{{ tag_group }}" type="text" class="form-control tag-add-input mb-2 visually-hidden" list="tag_{{ tag_group }}_list" placeholder="{{ placeholder | default: "Search" }}"/>
+        <datalist id="tag_{{ tag_group }}_list">
+            {% for tag in tag_options %}
+                <option value="{{ tag.value }} ( {{ tag.name }} )" data-id="{{ tag.id }}" data-value="{{ tag.value }}" data-name="{{ tag.name }}">
+            {% endfor %}
+        </datalist>
+        <div class="page-tag-list">
+            {% for tag in tags %}
+                <span role="button" class="page-tag badge rounded-pill bg-primary" data-id="{{ tag.id }}">{{ tag.value }} <i class="fas fa-times"></i></span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<hr/>

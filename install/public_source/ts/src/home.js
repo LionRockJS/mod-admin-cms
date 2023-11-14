@@ -1,0 +1,1 @@
+/* precompile script for home page */

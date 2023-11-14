@@ -1,0 +1,20 @@
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/admin">Home</a></li>
+            <li class="breadcrumb-item"><a href="/admin/tag_types">Tag Types</a></li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container mb-5">
+    <form action="/admin/tag_types/{{ item.id }}" method="post" class="mb-1">
+        <div class="input-group">
+            <label for="name" class="input-group-text">Name</label>
+            <input class="form-control" type="text" name=":name" value="{{ item.name }}" id="name"/>
+            <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+    </form>
+
+
+</div>

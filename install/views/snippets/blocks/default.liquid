@@ -1,0 +1,25 @@
+{% capture selector %}#{{ block_index }}@date{% endcapture %}{% render 'pagefield/date/basic', label: "Date", selector:selector ,value: tokens.date, placeholder: placeholder.tokens.date %}
+{% capture selector %}#{{ block_index }}.name{% endcapture %}{% render 'pagefield/text/basic', label: "Name", selector:selector, value: tokens.name, placeholder: placeholder.tokens.name %}
+{% capture selector %}#{{ block_index }}.body{% endcapture %}{% render 'pagefield/text/basic', label: "Body", selector:selector, value: tokens.body, placeholder: placeholder.tokens.body %}
+{% capture selector %}#{{ block_index }}.link{% endcapture %}{% render 'pagefield/link/basic', label: "Link", selector:selector, value: tokens.link, placeholder: placeholder.tokens.link %}
+
+
+<!-- items -->
+<div>
+    {% assign item_name = 'items' %}
+    {% assign item_label = 'Item' %}
+    <div class="row mb-3 align-items-center"><div class="col-8"><h5><i class="fas fa-cubes"></i> {{ item_label }}</h5></div><div class="col-4 text-end"></div></div>
+
+    {% assign items =  tokens[item_name] |  sort: "_weight"%}
+    {% for pageItem in items %}
+        {% capture prefix %}#{{ block_index }}.{{ item_name }}[{{ pageItem._key }}]{% endcapture %}
+        <div class="d-flex flex-row mb-3">
+            {% render "page/edit/item/weight", prefix: prefix, weight: pageItem._weight %}
+            <div class="me-2 w-100">
+                {% capture selector %}{{ prefix }}.name{% endcapture %}{% render 'pagefield/text/basic', label: "Name", value: pageItem.name, selector: selector %}
+            </div>
+            {% render "page/edit/block/item-add-button", index: pageItem._key, page_id:item.id, item_name: item_name, block_index:block_index %}
+        </div>
+    {% endfor %}
+</div>
+<!-- end items -->

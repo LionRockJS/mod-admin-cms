@@ -1,0 +1,30 @@
+@startuml
+skinparam Shadowing false
+
+title Page Create
+
+start
+
+#000:<color:#FFF>ControllerContent:action_create_by_type</color>;
+:create Page;
+
+:assign name, page type, slug;
+
+:write Page;
+
+:write default values;
+
+#777:<color:#FFF>redirect admin/pages/newID</color>;
+:ControllerAdminPage:action_read;
+#EEE:sync master values;
+if (language === default language) then (yes)
+:load default value;
+else (no)
+:read all page values;
+endif
+#EEE:setEditTemplate;
+end
+
+
+
+@enduml

@@ -1,0 +1,8 @@
+{% assign id = selector | replace: ".", "-" | replace: "[", "-" | replace: "]", "-" %}
+<div class="input-group mb-2">
+    <span class="input-group-text input-group-icon"><i class="far fa-link"></i></span>
+    <label for="{{ id }}-label" class="visually-hidden">{{ label }}</label>
+    <input class="form-control" type="text" name="{{ selector }}__label" value="{{ value.label }}" id="{{ id }}-label" placeholder="{{ placeholder.label | default: label }}"/>
+    <label for="{{ id }}-url" class="visually-hidden">{{ label }}</label>
+    <input class="form-control" type="text" name="{{ selector }}__url" value="{{ value.url }}" id="{{ id }}-url" placeholder="{{ placeholder.url | default: "https://example.com" }}"/>
+</div>

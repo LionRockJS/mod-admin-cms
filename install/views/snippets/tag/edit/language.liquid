@@ -1,0 +1,19 @@
+<div class="row d-flex align-items-center">
+    <div class="col-10">
+        {% if autosave %}
+            {% if language == "en"      %}<span class="btn btn-secondary text-white fw-bold disabled">EN</span>{% else %}<button type="submit" name="destination" value="/admin/tags/{{ item.id }}?language=en" class="btn btn-link text-white">EN</button>{% endif %}
+            {% if language == "zh-hant" %}<span class="btn btn-secondary text-white fw-bold disabled">繁</span>{% else %}<button type="submit" name="destination" value="/admin/tags/{{ item.id }}?language=zh-hant" class="btn btn-link text-white">繁</button>{% endif %}
+            {% if language == "zh-hans" %}<span class="btn btn-secondary text-white fw-bold disabled">简</span>{% else %}<button type="submit" name="destination" value="/admin/tags/{{ item.id }}?language=zh-hans" class="btn btn-link text-white">简</button>{% endif %}
+        {% else %}
+            {% if language == "en"      %}<span class="btn btn-secondary text-white fw-bold disabled">EN</span>{% else %}<a href="/admin/tags/{{ item.id }}?language=en" class="btn btn-link text-white">EN</a>{% endif %}
+            {% if language == "zh-hant" %}<span class="btn btn-secondary text-white fw-bold disabled">繁</span>{% else %}<a href="/admin/tags/{{ item.id }}?language=zh-hant" class="btn btn-link text-white">繁</a>{% endif %}
+            {% if language == "zh-hans" %}<span class="btn btn-secondary text-white fw-bold disabled">简</span>{% else %}<a href="/admin/tags/{{ item.id }}?language=zh-hans" class="btn btn-link text-white">简</a>{% endif %}
+        {% endif %}
+    </div>
+    <div class="col-2">
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" name="autosave" id="autosave" value="1" {% if autosave %}checked{% endif %}>
+            <label class="form-check-label" for="autosave">Auto-Save</label>
+        </div>
+    </div>
+</div>

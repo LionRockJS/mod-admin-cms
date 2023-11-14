@@ -1,0 +1,17 @@
+{% assign id = selector | replace: ".", "-" | replace: "[", "-" | replace: "]", "-" %}
+<div id="{{ selector }}" class="page-field page-field-upload page-field-picture{% if preview %} page-field-picture-preview {% endif %}">
+  {% if value != blank and preview %}
+  <div class="preview"><img src="{{ value }}" alt=""/></div>
+  {% endif %}
+  <div class="input-group mb-2">
+    <span class="input-group-text input-group-icon">{% if value == blank or preview %}<i class="far fa-image"></i>{% else %}<img class="icon" src="{{ value }}" alt=""/>{% endif %}</span>
+    <span class="form-control p-0">
+      <label for="{{ id }}-input" class="fs-50 lh-1 bg-white" style="position: absolute; padding: 0 0.70rem; margin-top: -0.6em;">{{ label }}</label>
+      <input class="form-control border-0 page-field-upload-text" type="text" name="{{ selector }}" value="{{ value }}" id="{{ id }}-input" placeholder="{{ placeholder | default: label }}"/>
+    </span>
+    <span class="input-group-text">
+      <label for="{{ id }}-upload"><i class="fas fa-cloud-upload-alt"></i></label>
+      <input class="visually-hidden" type="file" id="{{ id }}-upload" name="{{ selector }}-file"/>
+    </span>
+  </div>
+</div>

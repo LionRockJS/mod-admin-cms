@@ -1,0 +1,25 @@
+.form-control-plaintext.thin-line{
+  border: 1px solid #EEE;
+  border-left: none;
+  border-right: none;
+}
+
+.page-field-picture-preview{
+  .preview{
+    background: #AAA;
+    text-align: center;
+    border-radius: 5px 5px 0 0;
+
+    img {
+      max-width: 100%;
+      max-height: 10rem;
+    }
+  }
+}
+
+.page-field-picture{
+  img.icon{
+    max-width: 3rem;
+    max-height: 1.5rem;
+  }
+}

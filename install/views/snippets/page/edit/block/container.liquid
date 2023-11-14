@@ -1,0 +1,48 @@
+{% assign limit_blocks = limits | split : "," %}
+<div class="row mb-3">
+    <div class="col-6">
+        <h5><i class="fad fa-th me-2"></i>Content Blocks</h5>
+    </div>
+    <div id="add-block" class="col-6">
+        <div class="input-group">
+            <label for="block-select" class="visually-hidden">Available Blocks</label>
+            <select id="block-select" name="block-select" class="form-control">
+                <option value="">--Please choose a content block--</option>
+                {% if limits != blank %}
+                    {% for block_name in limit_blocks %}
+                        <option value="{{ block_name }}">{{ block_name }}</option>
+                    {% endfor %}
+                {% else %}
+                    {% for block_name in block_names %}
+                        <option value="{{ block_name }}">{{ block_name }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+            <button type="submit" class="btn btn-primary" name="action" value="block-add">Add</button>
+        </div>
+    </div>
+</div>
+
+<div class="draggable-zone">
+{% assign sortPlaceholders = placeholder | sort : "_weight" %}
+{% assign sortBlocks = blocks | sort : "_weight" %}
+{% for block in sortBlocks %}
+    {% assign blockPlaceholder = sortPlaceholders[forloop.index0] %}
+    {% assign tokens = block.tokens %}
+    {% capture prefix %}#{{ block._key }}{% endcapture %}
+    <div class="page-block" draggable="true">
+        <div class="row">
+            <div class="col-11">
+                <div class="input-group mb-2">
+                    <span class="input-group-text input-group-icon bg-primary text-white"><i class="fas fa-cube"></i></span>
+                    <input class="form-control bg-primary text-white w-50 ff-serif" name="{{ prefix }}@_name" value="{{ tokens._name }}" pattern="[a-z0-9_-]+" placeholder="{{ tokens._type }}"/>
+                    <input class="form-control text-center bg-primary text-white" name="{{ prefix }}@_weight" value="{{ tokens._weight | default: forloop.index0 }}" pattern="[0-9.]+" style="max-width: 4rem;"/>
+                </div>
+            </div>
+            {% render 'page/edit/block/delete', page_id: page_id, index: block._key %}
+        </div>
+        {% capture tpl %}blocks/{{ tokens._type }}{% endcapture %}
+        {% render tpl, page_id: page_id, tokens: tokens, block_index: block._key, placeholder: blockPlaceholder %}
+    </div>
+{% endfor %}
+</div>

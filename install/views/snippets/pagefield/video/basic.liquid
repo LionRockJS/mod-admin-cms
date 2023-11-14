@@ -1,0 +1,6 @@
+{% assign id = selector | replace: ".", "-" | replace: "[", "-" | replace: "]", "-" %}
+<div class="input-group mb-2">
+  <span class="input-group-text input-group-icon"><i class="far fa-video"></i></span>
+  <label for="{{ id }}" class="visually-hidden">{{ label }}</label>
+  <input class="form-control" type="text" name="{{ selector }}" value="{{ value }}" id="{{ id }}" placeholder="{{ placeholder | default: label }}"/>
+</div>

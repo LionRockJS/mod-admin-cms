@@ -1,0 +1,1 @@
+Place share script in this folder.

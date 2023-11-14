@@ -1,0 +1,2 @@
+<!--{% capture selector %}#{{ block_index }}.subject{% endcapture %}{% render 'pagefield/text/basic', label: "Subject", selector:selector ,value: tokens.subject %} -->
+{% capture selector %}#{{ block_index }}.body{% endcapture %}{% render 'pagefield/textarea/basic', label: "Body", selector:selector, value: tokens.body %}

@@ -1,0 +1,27 @@
+{% capture model_attribute %}PageBlock({{ block._.id }})>PageBlockAttribute{% endcapture %}
+{% capture model_value %}PageBlock({{ block._.id }})>PageBlockValue{% endcapture %}
+
+{% capture selector %}#{{ block_index }}.style{% endcapture %}{% render 'pagefield/enum/basic', label: "Style", selector:selector, value: tokens.style, enum: "1,2", icon: "star" %}
+<!--{% capture selector %}#{{ block_index }}.subject{% endcapture %}{% render 'pagefield/text/basic', label: "Subject", selector:selector, value: tokens.subject %} -->
+{% capture selector %}#{{ block_index }}.body{% endcapture %}{% render 'pagefield/text/basic', label: "Body", selector:selector, value: tokens.body %}
+
+<!-- items -->
+<div>
+    {% assign item_name = 'pictures' %}
+    {% assign item_label = 'Pictures' %}
+    <div class="row mb-3 align-items-center"><div class="col-8"><h5><i class="fas fa-cubes"></i> {{ item_label }}</h5></div><div class="col-4 text-end"></div></div>
+
+    {% for pageItem in tokens[item_name] %}
+        {% capture prefix %}#{{ block_index }}.{{ item_name }}[{{ forloop.index0 }}]{% endcapture %}
+        <div class="d-flex flex-row mb-3">
+            {% render "page/edit/item/weight", prefix: prefix, weight: pageItem._weight %}
+            <div class="me-2 w-100">
+                {% capture selector %}{{ prefix }}.picture{% endcapture %}{% render 'pagefield/picture/basic', label: "Picture", value: pageItem.picture, selector: selector %}
+<!--                {% capture selector %}{{ prefix }}.caption{% endcapture %}{% render 'pagefield/text/basic', label: "Caption", value: pageItem.caption, selector: selector %}
+                {% capture selector %}{{ prefix }}.description{% endcapture %}{% render 'pagefield/text/basic', label: "Description", value: pageItem.description, selector: selector %} -->
+            </div>
+            {% render "page/edit/block/item-add-button", index: forloop.index0, page_id:item.id, item_name: item_name, block_index:block_index %}
+        </div>
+    {% endfor %}
+</div>
+<!-- end items -->

@@ -1,0 +1,41 @@
+<div class="container">
+    <header>
+        <h1 class="admin-title">{{ page_type | capitalize }} {{ type.tableName | capitalize }}</h1>
+
+        <div class="admin-toolset">
+            <a class="label-icon toolset-add" href="/admin/contents/create/{{ page_type }}">Create {{ page_type}}</a>
+        </div>
+    </header>
+
+    <form action="/admin/pages" method="post">
+        <input type="hidden" name="destination" value="/admin/contents/list/{{ page_type }}">
+    <table id="table" class="table table-hover draggable-table">
+        <thead>
+        <tr>
+            <th></th>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Launch Date</th>
+            <th class="text-center">Ordering</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in items %}
+            <tr>
+                <td><input type="checkbox" name="chk{{item.id}}" /></td>
+                <td>{{ forloop.index }}</td>
+                <td><a href="/admin/{{type.tableName}}/{{item.id}}">{{item.name}}</a></td>
+                <td>{{ item.attributes.date.value | default: '' | to_time | date: "%Y-%m-%d" }}</td>
+                <td class="text-center" style="width:3em" >
+                    <input class="form-control py-0 text-center bg-dark text-white" type="text" name="({{ item.id }}):weight" value="{{ item.weight }}"/>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+        <div class="text-end my-3">
+            <button type="submit" class="btn btn-primary text-white">Save Priority</button>
+        </div>
+
+    </form>
+</div>

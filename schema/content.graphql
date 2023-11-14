@@ -1,0 +1,26 @@
+type Pages implements IName{
+  name:String!
+  slug:String!
+
+  weight: Int @default(value: 5)
+
+  start: Date
+  end: Date
+
+  page_type: String
+  current_page_version_id:Int
+  original: String
+}
+
+type PageTags{
+  belongsTo: Pages
+  tag_id: Int!
+  weight: Int @default(value: 5)
+}
+
+type PageKeywords{
+  language_code: String!
+  name: String!
+  keywords: String!
+  belongsTo: Pages
+}

@@ -1,0 +1,17 @@
+<div class="container">
+    <div class="row">
+        <div class="col-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/admin">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/admin/contents/list/{{ slug }}">{{ label }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ item.name | default: item.id }}</li>
+                </ol>
+            </nav>
+        </div>
+
+        <div class="col-4">
+            <a class="label-icon toolset-add float-end" href="/admin/contents/create/{{ slug }}">New {{ slug }}</a>
+        </div>
+    </div>
+</div>

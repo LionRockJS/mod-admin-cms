@@ -1,0 +1,5 @@
+{% assign id = selector | prepend: "l" |replace: ".", "-" | replace: "[", "-" | replace: "]", "-" %}
+<div class="mb-2">
+  <label for="{{ id }}" class="visually-hidden">{{ label }}</label>
+  <input class="form-control form-control-plaintext {{ class_name }}" type="text" name="{{ selector }}" value="{{ value }}" id="{{ id }}" placeholder="{{ placeholder | default: label }}"/>
+</div>

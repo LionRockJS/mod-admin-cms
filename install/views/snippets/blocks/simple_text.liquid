@@ -1,0 +1,8 @@
+{% capture model_name %}PageBlock({{ block._.id }})>PageBlockValue{% endcapture %}
+<div class="row">
+    <div class="col-12">
+        {% render 'pagefield/textarea/basic', label: "Body", value: block.values.body, model_name : model_name, class_name: "thin-line" %}
+    </div>
+</div>
+
+

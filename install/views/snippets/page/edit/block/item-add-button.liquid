@@ -1,0 +1,10 @@
+{% assign index = index | default: 0 %}
+{% assign item_name = item_name | default : "item_name" %}
+{% assign page_id = page_id | default: "000" %}
+<div>
+    {% if index > 0 %}
+        <button type="submit" class="btn btn-link" name="action" value="block-item-delete:{{ block_index }}|{{ item_name }}|{{ index }}"><i class="fal fa-times-circle"></i></button>
+    {% else %}
+        <button type="submit" class="btn btn-link" name="action" value="block-item-add:{{ block_index }}|{{ item_name }}"><i class="fas fa-plus-circle"></i></button>
+    {% endif %}
+</div>

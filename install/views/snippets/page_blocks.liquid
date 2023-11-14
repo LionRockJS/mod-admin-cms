@@ -1,0 +1,46 @@
+{% assign limit_blocks = limits | split : "," %}
+<div class="row mb-3">
+    <div class="col-6">
+        <h5><i class="fad fa-th me-2"></i>Content Blocks</h5>
+    </div>
+    <div id="add-block" class="col-6">
+        <div class="input-group">
+            <select class="form-control">
+                <option value="">--Please choose a content block--</option>
+                {% if limits != blank %}
+                    {% for block_name in limit_blocks %}
+                        <option value="{{ block_name }}">{{ block_name }}</option>
+                    {% endfor %}
+                {% else %}
+                    {% for block_name in block_names %}
+                        <option value="{{ block_name }}">{{ block_name }}</option>
+                    {% endfor %}
+                {% endif %}
+
+
+            </select>
+            <a class="btn btn-primary" href="#" data-link="/admin/pages/add-block/{{ item.id }}/[block_name]?language={{ language }}">Add</a>
+        </div>
+    </div>
+</div>
+
+<div class="draggable-zone">
+{% for block in blocks %}
+    <div class="page-block" draggable="true">
+        <div class="row">
+            <div class="col-8">
+                <h5>{{ block._.name }}</h5>
+            </div>
+            <div class="col-3 text-end">
+                <input class="form-control text-center condense-3" name=">PageBlock({{ block._.id }}):weight" value="{{ block._.weight }}" pattern="[0-9.]+"/>
+            </div>
+            <div class="col-1 text-end">
+                <button name="destination" value="/admin/pages/delete-block/{{ block._.id }}" type="submit" class="btn btn-link"><i class="fal fa-times-hexagon"></i></button>
+            </div>
+        </div>
+
+        {% assign tpl = "blocks/" | append: block._.name %}
+        {% render tpl, block: block %}
+    </div>
+{% endfor %}
+</div>

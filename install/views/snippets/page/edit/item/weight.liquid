@@ -1,0 +1,6 @@
+{% assign prefix = prefix | default:"prefix" %}
+{% assign value = weight | default: "0" %}
+
+<div class="me-2">
+   <input class="form-control text-center condense-3 text-white bg-primary" style="width: 3rem; border-radius: 2rem;" name="{{ prefix }}@_weight" value="{{ value }}" pattern="[0-9]+"/>
+</div>

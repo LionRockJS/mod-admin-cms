@@ -1,0 +1,14 @@
+{% assign id = selector | replace: ".", "-" | replace: "[", "-" | replace: "]", "-" %}
+{% assign options = enum | split: "," %}
+<div class="input-group mb-2">
+    <span class="input-group-text input-group-icon"><i class="far fa-{{ icon | default: "pen" }}"></i></span>
+    <span class="form-control p-0">
+        <label for="{{ id }}" class="fs-50 lh-1 bg-white" style="position: absolute; padding: 0 0.70rem; margin-top: -0.6em;">{{ label }}</label>
+        <select class="form-select" name="{{ selector }}" data-value="{{ value }}" id="{{ id }}">
+            <option value="">Please Select</option>
+            {% for option in options %}
+            <option value="{{ option }}" {% if option == value %}selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+        </select>
+    </span>
+</div>

@@ -1,0 +1,38 @@
+<div class="container">
+    <header>
+        <h1 class="admin-title">Tags</h1>
+
+        <div class="admin-toolset">
+            <a class="label-icon toolset-add" href="/admin/tags/new">Create Tag</a>
+        </div>
+    </header>
+
+    <form action="/admin/tags" method="post">
+        <table id="table" class="table table-hover draggable-table">
+            <thead>
+            <tr>
+                <th></th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Tag Type</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in items %}
+                {% if filter_tag_type == 0 or item.tag_type_id == filter_tag_type %}
+                <tr>
+                    <td><input type="checkbox" name="chk{{item.id}}" /></td>
+                    <td>{{ item.id }}</td>
+                    <td><a href="/admin/tags/{{item.id}}">{{item.name}}</a></td>
+                    <td><a href="/admin/tags?filter_tag_type={{ item.tag_type_id }}">{{ tag_types[item.tag_type_id] }}</a></td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="text-end my-3">
+            <button type="submit" class="btn btn-primary text-white">Save Priority</button>
+        </div>
+
+    </form>
+</div>

@@ -1,0 +1,60 @@
+{% assign block_types = "default" %}
+{% assign page_type_name = "Default" %}
+{% render "page/edit/breadcrumb", slug: page_type, label: page_type_name, item: item %}
+<form id="main-form" action="/admin/pages/{{ item.id }}?language={{ language |  default: "en" }}" method="post">
+  {% render "page/edit/header", slug : page_type, label: page_type_name, item: item, published: published, sync: sync %}
+  <div class="container">
+    <div class="row">
+      <div class="col-9">
+        <div class="card my-2">
+          <div class="card-header bg-primary text-light sticky-top">
+            {% render "page/edit/language", language: language, autosave: autosave %}
+          </div>
+          <div class="card-body">
+            <!-- values --->
+            {% render 'page/edit/field-row', type: "text/basic",     label: "Name", selector: ".name", value: tokens.name, placeholder: placeholders.name %}
+            {% render 'page/edit/field-row', type: "textarea/basic", label: "Body", selector: ".body", value: tokens.body, placeholder: placeholders.body %}
+            {% render 'page/edit/field-row', type: "link/basic",     label: "Link", selector: ".link", value: tokens.link, placeholder: placeholders.link %}
+
+            <hr/>
+            <!-- items -->
+            <div>
+              {% assign item_name = 'items' %}
+              {% assign item_label = 'Item' %}
+              <div class="row mb-3 align-items-center"><div class="col-8"><h5><i class="far fa-copy me-2"></i>{{ item_label }}</h5></div><div class="col-4 text-end"></div></div>
+
+              {% for pageItem in tokens[item_name] %}
+                {% capture prefix %}.{{ item_name }}[{{ forloop.index0 }}]{% endcapture %}
+                <div class="d-flex flex-row mb-3">
+                  {% render "page/edit/item/weight", prefix: prefix, weight: pageItem._weight %}
+                  <div class="me-2 w-100">
+                    {% capture selector %}{{ prefix }}.name{% endcapture %}{% render 'pagefield/text/basic', label: "Name", value: pageItem.name, selector: selector %}
+                    {% capture selector %}{{ prefix }}.body{% endcapture %}{% render 'pagefield/text/basic', label: "Body", value: pageItem.body, selector: selector %}
+                  </div>
+                  {% render "page/edit/item/add-button", index: forloop.index0, page_id:item.id, item_name: item_name %}
+                </div>
+              {% endfor %}
+            </div>
+            <!-- end items -->
+            <hr/>
+            {% render "page/edit/block/container", page_id: item.id, placeholder: placeholders.blocks, block_names: block_names, blocks: blocks, limits: block_types %}
+          </div>
+        </div>
+
+        {% render "page/edit/footer", item: item, published: published, sync: sync %}
+      </div>
+
+      <div class="col-3 pt-2">
+        <div class="page-attributes">
+          {% render 'pagefield/text/basic', label: "date", selector: "@date", value: tokens.date %}
+        </div>
+
+        <div class="page-tags">
+          {% render "page/edit/tag/input", page_id: item.id, label: "Categories", tag_group:"Categories", tag_options: tags.categories, tags: item.tags.categories %}
+          {% render "page/edit/tag/input", page_id: item.id, label: "Topics", tag_group:"Topics", tag_options: tags.topics, tags: item.tags.topics %}
+          {% render "page/edit/tag/input", page_id: item.id, label: "Collections", tag_group:"Collections", tag_options: tags.collections, tags: item.tags.collections %}
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

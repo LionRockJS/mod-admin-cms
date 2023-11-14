@@ -1,0 +1,28 @@
+{
+  "name": "@kohanajs/mod-cms",
+  "version": "9.9.0",
+  "description": "The CMS module for KohanaJS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/kohana-js/proposals/level0/mod-cms.git"
+  },
+  "keywords": [
+    "KohanaJS",
+    "content",
+    "managment",
+    "system",
+    "cms",
+    "multilang"
+  ],
+  "author": "Kojin Nakana",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://gitlab.com/kohana-js/proposals/level0/mod-cms/issues"
+  },
+  "homepage": "https://gitlab.com/kohana-js/proposals/level0/mod-cms#readme",
+  "dependencies": {}
+}

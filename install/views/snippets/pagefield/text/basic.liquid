@@ -1,0 +1,8 @@
+{% assign id = selector | prepend: "l" |replace: ".", "-" | replace: "[", "-" | replace: "]", "-" %}
+<div class="input-group mb-2">
+  <span class="input-group-text input-group-icon"><i class="far fa-pen"></i></span>
+  <span class="form-control p-0">
+  <label for="{{ id }}" class="fs-50 lh-1 bg-white" style="position: absolute; padding: 0 0.70rem; margin-top: -0.6em;">{{ label }}</label>
+  <input class="form-control border-0 page-field-upload-text" type="text" name="{{ selector }}" value="{{ value }}" id="{{ id }}" placeholder="{{ placeholder | default: label }}"/>
+  </span>
+</div>

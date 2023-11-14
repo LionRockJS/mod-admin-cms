@@ -1,0 +1,14 @@
+{% assign id = selector | replace: ".", "-" | replace: "[", "-" | replace: "]", "-" %}
+<div id="{{ id }}" class="mb-2 pagefield-page" data-page-type="{{ type }}">
+    <input id="{{ id }}-value" class="form-control border-0 pagefield-page-value" type="hidden" name="{{ selector }}" value="{{ value }}" placeholder="{{ placeholder | default: label }}"/>
+    <div class="input-group mg-1">
+        <span class="input-group-text input-group-icon"><i class="fa-regular fa-file-import"></i></span>
+        <span class="form-control p-0">
+      <label for="{{ id }}-input" class="fs-50 lh-1 bg-white" style="position: absolute; padding: 0 0.70rem; margin-top: -0.6em;">{{ label }}</label>
+      <input id="{{ id }}-input" class="form-control border-0 pagefield-page-input" type="text" placeholder="Search {{ type }}" list="page-list-{{ type }}"/>
+    </span>
+    </div>
+    <span id="{{ id }}-badges" class="pagefield-page-badges">
+
+    </span>
+</div>

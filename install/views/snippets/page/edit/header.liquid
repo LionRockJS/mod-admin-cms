@@ -1,0 +1,36 @@
+<button class="btn btn-primary text-white visually-hidden" type="submit" name="action" value="">Save</button>
+<div class="container">
+    <div class="row">
+        <div class="col-9">
+            <div class="row">
+                <input class="form-control input-page-name" type="text" placeholder="{{ label }}" name=":name" value="{{ item.name }}" required>
+            </div>
+
+            <div class="input-group mb-2 input-page-slug">
+                <label class="input-group-text" for="slug">https://{{ domain | default: "www.example.com" }}/{{ language }}/{{ slug }}/</label>
+                <input class="form-control" type="text" name=":slug" value="{{ item.slug }}" id="slug" placeholder="url" pattern="[a-z0-9-]+" required/>
+            </div>
+        </div>
+
+        <div class="col-3">
+            <div class="d-flex flex-row align-items-center justify-content-between mb-2">
+                <h5 class="m-0">Page Schedule</h5>
+                <div>
+                {% if published %}
+                    <a class="btn btn-secondary text-white" href="/admin/pages/un-publish/{{ item.id }}?language={{ language }}">Un-Publish</a>
+                    {% if sync != true%}<button class="btn btn-primary text-white" type="submit" name="action" value="publish">Update Live Version</button>{% endif %}
+                {% else %}
+                    {% capture untitled_name %}Untitled {{ page_type }}{% endcapture %}
+                    {% if item.name != untitled_name %}
+                        <button class="btn btn-primary text-white" type="submit" name="action" value="publish">Publish</button>
+                    {% endif %}
+                {% endif %}
+                </div>
+            </div>
+            <div>
+                {% render 'pagefield/date/range-tz', label: "From (+08:00)", selector:":start", value: item.start, label2: "To (+08:00)", selector2:":end", value2: item.end %}
+            </div>
+        </div>
+        <hr/>
+    </div>
+</div>

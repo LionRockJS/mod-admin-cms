@@ -1,0 +1,54 @@
+.draggable-table {
+  position: relative;
+  border-collapse: collapse;
+
+  .draggable-table__drag {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+
+
+    width: 100%;
+    border: 1px solid #f1f1f1;
+    z-index: 10;
+    cursor: grabbing;
+    -webkit-box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, 0.05);
+    box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, 0.05);
+
+    opacity: 1;
+  }
+
+  tbody {
+    tr {
+      cursor: grabbing;
+
+      td {
+        user-select: none;
+      }
+    }
+
+    tr:nth-child(even) {
+      background-color: #f7f7f7;
+    }
+
+    tr:nth-child(odd) {
+      background-color: #ffffff;
+    }
+
+    tr.is-dragging {
+      background: #CCCCCC;
+
+      td {
+        user-select: none;
+        > *{
+          visibility: hidden;
+        }
+        color: #CCCCCC;
+
+        a{
+          color: #CCCCCC;
+        }
+      }
+    }
+  }
+}

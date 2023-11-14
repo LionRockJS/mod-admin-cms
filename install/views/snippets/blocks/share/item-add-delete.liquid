@@ -1,0 +1,7 @@
+<div>
+    {% if first_item != true %}
+        <button name="destination" value="/admin/pages/delete-block-item/{{ item._.id }}" type="submit" class="btn btn-link"><i class="fal fa-times-circle"></i></button>
+    {% else %}
+        <button name="destination" value="/admin/pages/add-block-item/{{ block._.id }}/{{ block_item_name }}" type="submit" class="btn btn-link"><i class="fas fa-plus-circle"></i></button>
+    {% endif %}
+</div>

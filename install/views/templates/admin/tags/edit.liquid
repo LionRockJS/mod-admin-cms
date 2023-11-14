@@ -1,0 +1,53 @@
+<!-- form header -->
+{% assign tag_type = "Tags" %}
+{% render "tag/edit/breadcrumb", slug: page_type, label: tag_type, item: item %}
+<form id="main-form" action="/admin/tags/{{ item.id }}?language={{ language |  default: "en" }}" method="post">
+{% render "tag/edit/header", slug : page_type, label: tag_type, item: item %}
+<!--end form header -->
+
+  <div class="container">
+    <div class="row">
+      <div class="col-9">
+        <div class="card my-2">
+          <div class="card-header bg-primary text-light">
+            {% render "tag/edit/language", language: language %}
+          </div>
+          <div class="card-body">
+            {% render 'page/edit/field-row', type: "text/basic", label: "Name", selector:".name", value: tokens.name, placeholder: placeholders.name %}
+          </div>
+        </div>
+
+        {% render "tag/edit/footer", item: item, published: published, sync: sync %}
+      </div>
+
+      <div id="sidebar" class="col-3 pt-2">
+        <div class="mb-3">
+          <label class="fs-50 lh-1 bg-white" style="position: absolute; padding: 0 0.20rem; margin-top: -0.6em; margin-left:0.6rem" for="tagtypes">Tag Type</label>
+          <select id="tagtypes" name=":tag_type_id" class="form-select" required>
+            <option value="">Please Select</option>
+            {% for type in tag_types %}
+              <option value="{{ type.id }}" {% if type.id == item.tag_type_id %}selected="selected"{% endif %}>{{ type.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {% if tags %}
+        <div class="page-field-auto-complete">
+          <label class="fs-50 lh-1 bg-white" style="position: absolute; padding: 0 0.20rem; margin-top: -0.6em; margin-left:0.6rem" for="parent_tag">Parent Tag</label>
+          <input type="text" id="parent_tag" class="form-control page-field-auto-complete-search" list="taglist" value="{% if item.parent_tag %}{{ item.parent_tag.value | escape }} ( {{ item.parent_tag.name | escape }} ){% endif %}" placeholder="search"/>
+          <input type="hidden" class="page-field-auto-complete-value" value="{{ item.parent_tag.id }}" name=":parent_tag" />
+          <datalist id="taglist">
+            {% for tag in tags %}
+              {% if tag.id != item.id %}
+                <option value="{{ tag.value | escape }} ( {{ tag.name | escape }} )" data-id="{{ tag.id }}" />
+              {% endif %}
+            {% endfor %}
+          </datalist>
+        </div>
+        {% endif %}
+
+
+      </div>
+    </div>
+  </div>
+</form>

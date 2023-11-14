@@ -1,0 +1,11 @@
+type TagTypes implements IName{
+    name: String! @unique
+}
+
+type Tags implements IName{
+    name:String! @unique
+    original: String
+
+    belongsTo: TagTypes
+    associateTo : Tags @foreignKey(value: "parent_tag")
+}

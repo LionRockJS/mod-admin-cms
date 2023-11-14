@@ -1,0 +1,31 @@
+@startuml
+skinparam Shadowing false
+
+title Page Create
+
+start
+fork
+#000:<color:#FFF>Create Page</color>;
+:get page_type from URL;
+:get page_type id from database;
+:create page;
+:get language;
+:create default values;
+end
+
+fork again
+  #000:<color:#FFF>List Page</color>;
+end
+
+fork again
+  #000:<color:#FFF>page add item</color>;
+  :write updated values/
+  :page_id, item_name<
+
+end fork
+
+end
+
+
+
+@enduml

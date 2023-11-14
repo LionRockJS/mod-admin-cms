@@ -1,0 +1,60 @@
+{
+  "attributes": {
+    "keyvisual": "/media/images/example.png",
+    "logo" : "/media/images/example.png",
+    "date" : "2021",
+    "@client_groups/clients": "slug"
+  },
+  "values": {
+    "en": {
+      "name": "foo",
+      "body": "bar",
+      "teaser": "kaa",
+      "link@label": "click here",
+      "link@url": "https://www.example.com"
+    },
+    "zh-hant": {
+      "name": "愛"
+    }
+  },
+  "items": {
+    "todo": [
+      {
+        "en": {
+          "body": "tar",
+          "link@label": "click now",
+          "link@url": "https://www.example.com/now"
+        },
+        "zh-hant": {
+          "link@label": "按此"
+        }
+      }
+    ]
+  },
+  "blocks": [
+    {
+      "name": "timelines",
+      "attributes": {
+        "start": "2010",
+        "end": "2020"
+      },
+      "values": {
+        "en": {
+          "subject": "shaa"
+        },
+        "zh-hant": {}
+      },
+      "items": {
+        "event": [
+          {
+            "en": {
+              "subject": "item foo",
+              "body": "item bar"
+            },
+            "zh-hant": {}
+          }
+        ]
+      }
+    }
+  ]
+}

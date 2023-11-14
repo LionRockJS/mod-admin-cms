@@ -1,0 +1,16 @@
+{% assign id = selector | replace: ".", "-" | replace: "[", "-" | replace: "]", "-" %}
+<div class="input-group mb-2">
+    <span class="form-control p-0">
+        <span class="fs-50 lh-1 bg-white" style="position: absolute; padding: 0 0.70rem; margin-top: -0.6em;">{{ label }}</span>
+        <label for="{{ id }}" class="visually-hidden">{{ label }}</label>
+        <input class="form-control border-0 field-date-timezone-offset" id="{{ id }}" data-for="{{ selector }}" type="datetime-local" value="" lang="en" max="2200-12-30T00:00"/>
+        <input type="hidden" name="{{ selector }}" value="{{ value }}"/>
+    </span>
+
+    <span class="form-control p-0">
+        <span class="fs-50 lh-1 bg-white" style="position: absolute; padding: 0 0.70rem; margin-top: -0.6em;">{{ label2 }}</span>
+        <label for="{{ id }}-2" class="visually-hidden">{{ label2 }}</label>
+        <input class="form-control border-0 field-date-timezone-offset" id="{{ id }}-2" data-for="{{ selector2 }}" type="datetime-local" value="" lang="en" max="2200-12-30T00:00"/>
+        <input type="hidden" name="{{ selector2 }}" value="{{ value2 }}"/>
+    </span>
+</div>

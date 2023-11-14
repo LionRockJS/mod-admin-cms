@@ -1,0 +1,6 @@
+{% capture field_template %}pagefield/{{ type }}{% endcapture %}
+<div class="row align-items-center">
+    <div class="col-12">
+        {% render field_template, label: label, selector: selector, value: value, placeholder: placeholder %}
+    </div>
+</div>

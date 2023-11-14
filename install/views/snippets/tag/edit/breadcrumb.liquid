@@ -1,0 +1,9 @@
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/admin">Home</a></li>
+            <li class="breadcrumb-item"><a href="/admin/tags">{{ label }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ item.name | default: item.id }}</li>
+        </ol>
+    </nav>
+</div>

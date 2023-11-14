@@ -1,0 +1,14 @@
+{% capture key %}{{ selector }}{% endcapture %}
+<div id="{{ key }}" class="page-field page-field-upload page-field-picture{% if preview %} page-field-picture-preview {% endif %}">
+    <div class="input-group mb-2">
+        <span class="input-group-text input-group-icon">{% if value == blank or preview %}<i class="far fa-image"></i>{% else %}<img class="icon" src="{{ value }}" alt=""/>{% endif %}</span>
+        <span class="form-control p-0">
+  <label for="{{ key }}-input" class="fs-50 lh-1 bg-white" style="position: absolute; padding: 0 0.70rem; margin-top: -0.6em;">{{ label }}</label>
+  <input class="form-control border-0 page-field-upload-text" type="text" name="{{ selector }}" value="{{ value }}" id="{{ key }}-input" placeholder="{{ placeholder | default: label }}"/>
+</span>
+        <span class="input-group-text">
+  <label for="{{ key }}-upload"><i class="fas fa-cloud-upload-alt"></i></label>
+  <input class="visually-hidden" type="file" id="{{ key }}-upload" name="{{ key }}-file"/>
+</span>
+    </div>
+</div>

@@ -1,0 +1,5 @@
+{% assign id = selector | replace: ".", "-" | replace: "[", "-" | replace: "]", "-" %}
+<div class="mb-2">
+  <label for="{{ id }}" class="visually-hidden">{{ label }}</label>
+  <textarea class="form-control" type="text" name="{{ selector }}" id="{{ id }}" placeholder="{{ placeholder | default: label }}" rows="{{ rows | default : 4 }}">{{ value }}</textarea>
+</div>
