@@ -1,19 +1,19 @@
-const {ControllerMixinDatabase, ControllerMixinView, KohanaJS, ORM} = require("kohanajs");
-const {ControllerAdmin} = require("@kohanajs/mod-admin");
-const { ControllerMixinMultipartForm } = require('@kohanajs/mod-form');
+import { Controller } from '@lionrockjs/mvc';
+import { ControllerMixinDatabase, ControllerMixinView, Central, ORM } from '@lionrockjs/central';
+import { ControllerAdmin } from '@lionrockjs/mod-admin';
+import { ControllerMixinMultipartForm } from '@lionrockjs/mod-form';
+import HelperPageText from "../../helper/PageText.mjs";
 
-const HelperPageText = require('../../helper/PageText');
+import Tag from "../../model/Tag.mjs";
+import TagType from "../../model/TagType.mjs";
+import PageTag from "../../model/PageTag.mjs";
 
-const Tag = ORM.require('Tag');
-const TagType = ORM.require('TagType');
-const PageTag = ORM.require('PageTag');
-
-class ControllerAdminTag extends ControllerAdmin{
+export default class ControllerAdminTag extends ControllerAdmin{
   constructor(request){
     super(request, Tag, {
       databases: new Map([
-        ['draft', `${KohanaJS.config.cms.databasePath}/content.sqlite`],
-        ['tag',   `${KohanaJS.config.cms.databasePath}/www/tag.sqlite`],
+        ['draft', `${Central.config.cms.databasePath}/content.sqlite`],
+        ['tag',   `${Central.config.cms.databasePath}/www/tag.sqlite`],
       ]),
       database: 'tag',
       limit: 99999,
@@ -24,8 +24,7 @@ class ControllerAdminTag extends ControllerAdmin{
         ['read', 'templates/admin/tags/edit'],
       ]),
     });
-
-    this.language = this.language || KohanaJS.config.cms.defaultLanguage || 'en';
+    this.state.set(Controller.STATE_LANGUAGE, this.state.get(Controller.STATE_LANGUAGE) || Central.config.cms.defaultLanguage || 'en');
   }
 
   async action_index(){
@@ -75,8 +74,8 @@ class ControllerAdminTag extends ControllerAdmin{
     }
 
     const original = HelperPageText.getOriginal(instance);
-    const tokens = HelperPageText.originalToPrint(original, this.language).tokens;
-    const placeholders = HelperPageText.originalToPrint(original, KohanaJS.config.cms.defaultLanguage).tokens;
+    const tokens = HelperPageText.originalToPrint(original, this.state.get(Controller.STATE_LANGUAGE)).tokens;
+    const placeholders = HelperPageText.originalToPrint(original, Central.config.cms.defaultLanguage).tokens;
 
     Object.assign(
       this.state.get(ControllerMixinView.TEMPLATE).data,
@@ -85,7 +84,7 @@ class ControllerAdminTag extends ControllerAdmin{
         tokens,
         placeholders,
         tag_types,
-        autosave: this.request.session.autosave,
+        autosave: this.state.get(Controller.STATE_REQUEST).session.autosave,
         tags : tags.map(tag => {
           return {
             id: tag.id,
@@ -105,12 +104,12 @@ class ControllerAdminTag extends ControllerAdmin{
     const original = HelperPageText.getOriginal(instance);
     //update original
     Object.keys($_POST).forEach(name => {
-      HelperPageText.update(original, name, $_POST[name], this.language)
+      HelperPageText.update(original, name, $_POST[name], this.state.get(Controller.STATE_LANGUAGE))
     });
     instance.original = JSON.stringify(original);
     await instance.write();
 
-    this.request.session.autosave = $_POST['autosave'];
+    this.state.get(Controller.STATE_REQUEST).session.autosave = $_POST['autosave'];
 
     const destination = $_POST.destination || `/admin/tags/${instance.id}`;
     await this.redirect(destination, !$_POST.destination);
@@ -118,11 +117,10 @@ class ControllerAdminTag extends ControllerAdmin{
 
   async action_delete(){
     if(this.state.get('deleted')){
-      const { id } = this.request.params;
+
+      const { id } = this.state.get(Controller.STATE_PARAMS);
       const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
       await ORM.deleteBy(PageTag, 'tag_id', [id], {database});
     }
   }
 }
-
-module.exports = ControllerAdminTag;

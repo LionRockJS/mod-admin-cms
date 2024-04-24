@@ -1,4 +1,4 @@
-const HelperPageText = require('../classes/helper/PageText');
+import HelperPageText from "../classes/helper/PageText.mjs";
 
 const blueprint = {
   pages: [

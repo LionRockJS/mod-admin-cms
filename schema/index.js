@@ -1,5 +1,5 @@
-const path = require('path');
-const { build } = require('kohanajs-start');
+import path from 'node:path';
+import { build } from '@lionrockjs/start';
 
 build(
   `${__dirname}/content.graphql`,

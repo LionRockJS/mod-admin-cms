@@ -1,27 +1,29 @@
-const { ControllerAdmin } = require('@kohanajs/mod-admin');
-const { ControllerMixinDatabase, ControllerMixinView, KohanaJS, ORM } = require('kohanajs');
-const { ControllerMixinORMDelete } = require("@kohanajs/mixin-orm");
-const { ControllerMixinMultipartForm } = require('@kohanajs/mod-form');
-const HelperPageText = require('../../helper/PageText');
-const Page = ORM.require('Page');
-const PageTag = ORM.require('PageTag');
-const Tag = ORM.require('Tag');
-const TagType = ORM.require('TagType');
+import { Controller } from '@lionrockjs/mvc';
+import { ControllerAdmin } from '@lionrockjs/mod-admin';
+import { ControllerMixinDatabase, ControllerMixinView, Central, ORM } from '@lionrockjs/central';
+import { ControllerMixinORMDelete } from '@lionrockjs/mixin-orm';
+import { ControllerMixinMultipartForm } from '@lionrockjs/mod-form';
+import HelperPageText from "../../helper/PageText.mjs";
 
-class ControllerAdminPage extends ControllerAdmin {
+import Page from "../../model/Page.mjs";
+import PageTag from "../../model/PageTag.mjs";
+import Tag from "../../model/Tag.mjs";
+import TagType from "../../model/TagType.mjs";
+
+export default class ControllerAdminPage extends ControllerAdmin {
   constructor(request) {
     super(request, Page, {
       roles: new Set(['admin', 'staff']),
       databases: new Map([
-        ['draft', `${KohanaJS.config.cms.databasePath}/content.sqlite`],
-        ['live', `${KohanaJS.config.cms.databasePath}/www/content.sqlite`],
-        ['tag', `${KohanaJS.config.cms.databasePath}/www/tag.sqlite`],
+        ['draft', `${Central.config.cms.databasePath}/content.sqlite`],
+        ['live', `${Central.config.cms.databasePath}/www/content.sqlite`],
+        ['tag', `${Central.config.cms.databasePath}/www/tag.sqlite`],
       ]),
       database: 'draft',
     });
 
-    this.headers['Access-Control-Allow-Origin']  = '*';
-    this.language = this.language || KohanaJS.config.cms.defaultLanguage || 'en';
+    this.state.get(Controller.STATE_HEADERS)['Access-Control-Allow-Origin']  = '*';
+    this.state.set(Controller.STATE_LANGUAGE, this.state.get(Controller.STATE_LANGUAGE) || Central.config.cms.defaultLanguage || 'en');
   }
 
   async publish_weights(){
@@ -68,7 +70,7 @@ class ControllerAdminPage extends ControllerAdmin {
     const original = HelperPageText.getOriginal(instance);
     //update original
     Object.keys($_POST).forEach(name => {
-      HelperPageText.update(original, name, $_POST[name], this.language)
+      HelperPageText.update(original, name, $_POST[name], this.state.get(Controller.STATE_LANGUAGE))
     });
 
     //collect tags and write to original
@@ -84,7 +86,8 @@ class ControllerAdminPage extends ControllerAdmin {
     instance.original = JSON.stringify(original);
     await instance.write();
 
-    this.request.session.autosave = $_POST['autosave'];
+    const {session} = this.state.get(Controller.STATE_REQUEST)
+    session.autosave = $_POST['autosave'];
 
     //page start and end should sync with live version
     await this.updateLiveSchedule(instance);
@@ -166,7 +169,7 @@ class ControllerAdminPage extends ControllerAdmin {
   }
 
   async action_unpublish(){
-    const id = this.request.params['id'];
+    const {id} = this.state.get(Controller.STATE_PARAMS)
     await this.unpublish(id);
     await this.redirect(`/admin/pages/${id}`, true);
   }
@@ -196,17 +199,17 @@ class ControllerAdminPage extends ControllerAdmin {
 
     templateData.tokens       = page.print.tokens;
     templateData.blocks       = page.print.blocks;
-    templateData.block_names  = Object.keys(KohanaJS.config.cms.blocks) || [];
-    templateData.language     = this.language;
+    templateData.block_names  = Object.keys(Central.config.cms.blocks) || [];
+    templateData.language     = this.state.get(Controller.STATE_LANGUAGE);
     templateData.placeholders = placeholders;
-    templateData.autosave     = this.request.session.autosave;
+    templateData.autosave     = this.state.get(Controller.STATE_REQUEST).session.autosave;
     templateData.published    = !!livePage;
     templateData.sync         = page.original === livePage?.original && page.slug === livePage.slug;
     templateData.page_type    = page.page_type;
     templateData.tags         = tags;
 
-    const tpl = KohanaJS.config.cms.blueprint[editTemplateFolder] ? `templates/admin/page/page_types/${editTemplateFolder}/edit` : `templates/admin/page/page_types/default/edit`;
-    this.setTemplate(tpl, templateData);
+    const tpl = Central.config.cms.blueprint[editTemplateFolder] ? `templates/admin/page/page_types/${editTemplateFolder}/edit` : `templates/admin/page/page_types/default/edit`;
+    ControllerMixinView.setTemplate(this.state, tpl, templateData);
   }
 
   async action_create(){
@@ -215,20 +218,20 @@ class ControllerAdminPage extends ControllerAdmin {
   }
 
   async action_edit() {
-    const defaultLanguageCode = KohanaJS.config.cms.defaultLanguage || 'en';
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
     const liveDatabase = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
     const tagDatabase = this.state.get(ControllerMixinDatabase.DATABASES).get('tag');
+    const language = this.state.get(Controller.STATE_LANGUAGE);
 
     const page = this.state.get('instance');
     const livePage = await ORM.readBy(Page, 'id', [page.id], {database: liveDatabase, limit:1, asArray:false});
 
     const original = HelperPageText.getOriginal(page);
-    const defaultOriginal = HelperPageText.blueprint(page.page_type, KohanaJS.config.cms.blueprint, KohanaJS.config.cms.defaultLanguage);
+    const defaultOriginal = HelperPageText.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage);
 
-    page.print = HelperPageText.originalToPrint(HelperPageText.mergeOriginals(defaultOriginal, original), this.language, null);
+    page.print = HelperPageText.originalToPrint(HelperPageText.mergeOriginals(defaultOriginal, original), language, null);
 
-    const placeholders = HelperPageText.originalToPrint(original, this.language, KohanaJS.config.cms.defaultLanguage);
+    const placeholders = HelperPageText.originalToPrint(original, language, Central.config.cms.defaultLanguage);
 
     /** parse tags **/
     await page.eagerLoad({ with:['PageTag'] }, {database});
@@ -237,7 +240,7 @@ class ControllerAdminPage extends ControllerAdmin {
     page.tags = {};
     page.page_tags.forEach(page_tag => {
       const tag = page_tag.tag;
-      const print = HelperPageText.originalToPrint(HelperPageText.getOriginal(tag), this.language, KohanaJS.config.cms.defaultLanguage);
+      const print = HelperPageText.originalToPrint(HelperPageText.getOriginal(tag), language, Central.config.cms.defaultLanguage);
       page.tags[tag.tag_type.name] ||= [];
       page.tags[tag.tag_type.name].push({id:page_tag.id, name: tag.name, value: print.tokens.name || tag.name});
     });
@@ -251,7 +254,7 @@ class ControllerAdminPage extends ControllerAdmin {
     tags.forEach(tag => {
       if(pageTagSet.has(tag.id))return;
 
-      const print = HelperPageText.originalToPrint(HelperPageText.getOriginal(tag), this.language, KohanaJS.config.cms.defaultLanguage);
+      const print = HelperPageText.originalToPrint(HelperPageText.getOriginal(tag), language, Central.config.cms.defaultLanguage);
       templateTags[tag.tag_type.name] ||= [];
       templateTags[tag.tag_type.name].push({id:tag.id, name: tag.name, value: print.tokens.name || tag.name})
     })
@@ -279,8 +282,7 @@ class ControllerAdminPage extends ControllerAdmin {
   }
 
   async action_add_item(){
-    const pageId = this.request.params['page_id'];
-    const itemName= this.request.params['item_name'];
+    const {page_id:pageId, item_name:itemName} = this.state.get(Controller.STATE_PARAMS);
 
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
     const page = await ORM.factory(Page, pageId, {database});
@@ -290,10 +292,7 @@ class ControllerAdminPage extends ControllerAdmin {
   }
 
   async action_delete_item(){
-    const pageId = this.request.params['page_id'];
-    const itemName= this.request.params['item_name'];
-    const itemIndex= this.request.params['index'];
-
+    const {page_id:pageId, item_name:itemName, index:itemIndex} = this.state.get(Controller.STATE_PARAMS);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
     const page = await ORM.factory(Page, pageId, {database});
 
@@ -304,10 +303,10 @@ class ControllerAdminPage extends ControllerAdmin {
   async block_add(page, blockName){
     if(!blockName)return;
 
-    const blueprint = KohanaJS.config.cms.blocks[blockName];
+    const blueprint = Central.config.cms.blocks[blockName];
     if(!blueprint) throw new Error(`Block ${blockName} not defined in config`);
 
-    const defaultBlock = HelperPageText.blueprint(blockName, KohanaJS.config.cms.blocks, KohanaJS.config.cms.defaultLanguage);
+    const defaultBlock = HelperPageText.blueprint(blockName, Central.config.cms.blocks, Central.config.cms.defaultLanguage);
     delete defaultBlock.blocks;
 
     const original = HelperPageText.getOriginal(page);
@@ -346,13 +345,13 @@ class ControllerAdminPage extends ControllerAdmin {
   }
 
   async item_add(page, itemName){
-    const defaultOriginal = HelperPageText.blueprint(page.page_type, KohanaJS.config.cms.blueprint, KohanaJS.config.cms.defaultLanguage || 'en');
+    const defaultOriginal = HelperPageText.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en');
     const defaultItem = defaultOriginal.items[itemName][0];
     const original = HelperPageText.getOriginal(page);
 
     if(!original.items[itemName]){
       //create first item
-      original.items[itemName] = HelperPageText.blueprint(page.page_type, KohanaJS.config.cms.blueprint, KohanaJS.config.cms.defaultLanguage || 'en').items[itemName]
+      original.items[itemName] = HelperPageText.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en').items[itemName]
     }
 
     defaultItem.attributes._weight = original.items[itemName].length;
@@ -370,8 +369,7 @@ class ControllerAdminPage extends ControllerAdmin {
   }
 
   async action_add_block(){
-    const pageId = this.request.params['page_id'];
-    const blockName= this.request.params['block_name'];
+    const {page_id:pageId, block_name:blockName} = this.state.get(Controller.STATE_PARAMS);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
     const page = await ORM.factory(Page, pageId, {database});
     if(!page) throw new Error(`Page ${pageId} not found`);
@@ -382,8 +380,7 @@ class ControllerAdminPage extends ControllerAdmin {
   }
 
   async action_delete_block(){
-    const pageId = this.request.params['page_id'];
-    const blockIndex = this.request.params['index'];
+    const {page_id:pageId, index:blockIndex} = this.state.get(Controller.STATE_PARAMS);
 
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
     const page = await ORM.factory(Page, pageId, {database});
@@ -394,7 +391,7 @@ class ControllerAdminPage extends ControllerAdmin {
   }
 
   async action_add_block_item(){
-    const {page_id: pageId, block_index: blockIndex, item_name: itemName } = this.request.params;
+    const {page_id: pageId, block_index: blockIndex, item_name: itemName } = this.state.get(Controller.STATE_PARAMS);
 
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
     const page = await ORM.factory(Page, pageId, {database});
@@ -403,7 +400,7 @@ class ControllerAdminPage extends ControllerAdmin {
   }
 
   async action_delete_block_item(){
-    const {page_id: pageId, block_index: blockIndex, item_name: itemName, index:itemIndex } = this.request.params;
+    const {page_id: pageId, block_index: blockIndex, item_name: itemName, index:itemIndex } = this.state.get(Controller.STATE_PARAMS);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
     const page = await ORM.factory(Page, pageId, {database});
     await this.block_item_delete(page, blockIndex, itemName, itemIndex);
@@ -411,5 +408,3 @@ class ControllerAdminPage extends ControllerAdmin {
     await this.redirect(`/admin/pages/${pageId}`, true);
   }
 }
-
-module.exports = ControllerAdminPage;

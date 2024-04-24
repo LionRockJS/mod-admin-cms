@@ -1,13 +1,13 @@
-const {KohanaJS, ORM} = require("kohanajs");
-const {ControllerAdmin} = require("@kohanajs/mod-admin");
+import { Central } from '@lionrockjs/central';
+import { ControllerAdmin } from '@lionrockjs/mod-admin';
 
-const TagType = ORM.require('TagType');
+import TagType from "../../model/TagType.mjs";
 
-class ControllerTagType extends ControllerAdmin{
+export default class ControllerTagType extends ControllerAdmin{
   constructor(request){
     super(request, TagType, {
       databases: new Map([
-        ['tag',   `${KohanaJS.config.cms.databasePath}/www/tag.sqlite`],
+        ['tag',   `${Central.config.cms.databasePath}/www/tag.sqlite`],
       ]),
       database: 'tag',
       limit: 99999,

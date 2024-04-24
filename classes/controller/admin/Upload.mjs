@@ -1,15 +1,13 @@
-const path = require('node:path');
-
 const {stat, mkdir, copyFile, unlink} = require('node:fs').promises;
 
-const {Controller} = require("@kohanajs/core-mvc");
-const { ControllerMixinDatabase, ControllerMixinMime, ControllerMixinView, KohanaJS} = require("kohanajs");
-const { ControllerMixinLoginRequire } = require('@kohanajs/mod-auth');
-const { ControllerMixinSession } = require('@kohanajs/mod-session');
+import path from 'node:path';
+import { Controller } from "@lionrockjs/mvc";
+import { ControllerMixinDatabase, ControllerMixinMime, ControllerMixinView, Central } from "@lionrockjs/central";
+import { ControllerMixinLoginRequire } from "@lionrockjs/mod-auth";
+import { ControllerMixinSession } from "@lionrockjs/mod-session";
+import { ControllerMixinMultipartForm } from "@lionrockjs/mod-form";
 
-const { ControllerMixinMultipartForm } = require('@kohanajs/mod-form');
-
-class ControllerAdminUpload extends Controller{
+export default class ControllerAdminUpload extends Controller{
   static mixins = [...Controller.mixins,
     ControllerMixinDatabase,
     ControllerMixinSession,
@@ -23,12 +21,13 @@ class ControllerAdminUpload extends Controller{
     super(request);
 
     this.state.get(ControllerMixinDatabase.DATABASE_MAP)
-      .set('session', `${KohanaJS.config.auth.databasePath}/session.sqlite`);
+      .set('session', `${Central.config.auth.databasePath}/session.sqlite`);
 
     this.state.set(ControllerMixinLoginRequire.REJECT_LANDING, '/login');
     this.state.set(ControllerMixinLoginRequire.ALLOW_ROLES, new Set(['admin', 'staff', 'moderator']));
 
-    this.headers['Content-Type'] = 'application/json';
+    const headers = this.state.get(Controller.STATE_HEADERS);
+    headers['Content-Type'] = 'application/json';
   }
 
   async action_upload_post(){
@@ -37,7 +36,7 @@ class ControllerAdminUpload extends Controller{
     if(uploadDirectory.includes('../'))throw new Error('upload directory cannot contain ../');
 
     const today = new Date();
-    const uploadFolder = path.normalize(`${KohanaJS.EXE_PATH}/../public/media/${uploadDirectory}`)
+    const uploadFolder = path.normalize(`${Central.EXE_PATH}/../public/media/${uploadDirectory}`)
     const dateFolder = path.normalize(`${today.getFullYear()}/${today.getMonth()+1}/${today.getDate()}`);
     const uploadDateFolder = path.normalize(uploadFolder+'/'+dateFolder);
 
@@ -64,11 +63,9 @@ class ControllerAdminUpload extends Controller{
       return 'media/' + uploadDirectory + '/' + uploadPath.replaceAll('\\', '/');
     }))
 
-    this.body = {
+    this.state.set(Controller.STATE_BODY, {
       success: true,
       files: files.filter(it => it !== null)
-    }
+    });
   }
 }
-
-module.exports = ControllerAdminUpload;

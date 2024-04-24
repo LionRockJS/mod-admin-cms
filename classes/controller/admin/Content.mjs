@@ -1,14 +1,16 @@
-const pluralize = require('pluralize');
-const {ControllerMixinDatabase, ControllerMixinView, ORMAdapter, KohanaJS, ORM} = require("kohanajs");
-const {ControllerMixinORMRead} = require("@kohanajs/mixin-orm");
-const {ControllerAdmin, ControllerMixinImport} = require("@kohanajs/mod-admin");
-const Page = ORM.require('Page');
-class ControllerAdminContent extends ControllerAdmin{
+import pluralize from 'pluralize';
+import {Controller} from '@lionrockjs/mvc';
+import {ControllerMixinDatabase, ControllerMixinView, ORMAdapter, Central, ORM} from '@lionrockjs/central';
+import {ControllerMixinORMRead} from '@lionrockjs/mixin-orm';
+import {ControllerAdmin, ControllerMixinImport} from '@lionrockjs/mod-admin';
+import Page from '../../model/Page.mjs';
+
+export default class ControllerAdminContent extends ControllerAdmin{
   constructor(request, options = {}){
     super(request, Page, {
       databases: new Map([
-        ['live', `${KohanaJS.config.cms.databasePath}/www/content.sqlite`],
-        ['draft', `${KohanaJS.config.cms.databasePath}/content.sqlite`],
+        ['live', `${Central.config.cms.databasePath}/www/content.sqlite`],
+        ['draft', `${Central.config.cms.databasePath}/content.sqlite`],
       ]),
       orderBy: new Map([['weight', 'DESC'], ['created_at', 'DESC']]),
       database: 'draft',
@@ -20,13 +22,14 @@ class ControllerAdminContent extends ControllerAdmin{
       ...options,
     });
 
-    this.page_type = this.request.params['page_type'];
+    const {page_type} = this.state.get(Controller.STATE_PARAMS);
+
     this.state.set(ControllerMixinImport.UNIQUE_KEY, 'slug');
-    this.state.set(ControllerMixinORMRead.LIST_FILTER, [['AND', 'page_type', 'EQUAL', this.page_type]])
+    this.state.set(ControllerMixinORMRead.LIST_FILTER, [['AND', 'page_type', 'EQUAL', page_type]]);
   }
 
   async action_index(){
-    const page_type = this.request.params['page_type'];
+    const {page_type} = this.state.get(Controller.STATE_PARAMS);
     const instances = this.state.get('instances');
 
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
@@ -51,7 +54,7 @@ class ControllerAdminContent extends ControllerAdmin{
 
   async action_create_by_type(){
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
-    const page_type = this.request.params['page_type'];
+    const {page_type} = this.state.get(Controller.STATE_PARAMS);
     const weight = await ORM.countBy(Page, 'page_type', [page_type], {database});
 
     const insertID = ORMAdapter.defaultID();
@@ -66,8 +69,7 @@ class ControllerAdminContent extends ControllerAdmin{
   }
 
   async action_import_post(){
-    await this.redirect(`/admin/contents/list/${this.request.params['page_type']}`);
+    const {page_type} = this.state.get(Controller.STATE_PARAMS);
+    await this.redirect(`/admin/contents/list/${page_type}`);
   }
 }
-
-module.exports = ControllerAdminContent;

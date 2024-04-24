@@ -1,4 +1,4 @@
-class HelperPageText{
+export default class HelperPageText{
   static getOriginal(page, attributes={}){
     if(!page.original){
       return {"attributes":{}, "values":{}, "items":{}}
@@ -198,5 +198,3 @@ class HelperPageText{
     return original;
   }
 }
-
-module.exports = HelperPageText;
