@@ -4,9 +4,13 @@ import { ControllerAdmin } from '@lionrockjs/mod-admin';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mod-form';
 import HelperPageText from "../../helper/PageText.mjs";
 
-const PageTag = await ORM.import('PageTag');
-const Tag = await ORM.import('Tag');
-const TagType = await ORM.import('TagType');
+import DefaultPageTag from '../../model/PageTag.mjs';
+import DefaultTag from '../../model/Tag.mjs';
+import DefaultTagType from '../../model/TagType.mjs';
+
+const PageTag = await ORM.import('PageTag', DefaultPageTag);
+const Tag = await ORM.import('Tag', DefaultTag);
+const TagType = await ORM.import('TagType', DefaultTagType);
 
 export default class ControllerAdminTag extends ControllerAdmin{
   constructor(request){
