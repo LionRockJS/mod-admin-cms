@@ -2,9 +2,10 @@ import {Controller} from '@lionrockjs/mvc';
 import {ControllerMixinDatabase, Central, ORM} from '@lionrockjs/central';
 import {ControllerAdmin} from '@lionrockjs/mod-admin';
 import HelperPageText from "../../helper/PageText";
-import Page from "../../model/Page";
-import PageTag from "../../model/PageTag";
-import TagType from "../../model/TagType";
+
+const Page = await ORM.import('Page');
+const PageTag = await ORM.import('PageTag');
+const TagType = await ORM.import('TagType');
 
 const SQL = ORM.OP;
 

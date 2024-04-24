@@ -5,10 +5,10 @@ import { ControllerMixinORMDelete } from '@lionrockjs/mixin-orm';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mod-form';
 import HelperPageText from "../../helper/PageText.mjs";
 
-import Page from "../../model/Page.mjs";
-import PageTag from "../../model/PageTag.mjs";
-import Tag from "../../model/Tag.mjs";
-import TagType from "../../model/TagType.mjs";
+const Page = await ORM.import('Page');
+const PageTag = await ORM.import('PageTag');
+const Tag = await ORM.import('Tag');
+const TagType = await ORM.import('TagType');
 
 export default class ControllerAdminPage extends ControllerAdmin {
   constructor(request) {

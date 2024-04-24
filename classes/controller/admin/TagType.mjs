@@ -1,7 +1,7 @@
-import { Central } from '@lionrockjs/central';
+import {Central, ORM} from '@lionrockjs/central';
 import { ControllerAdmin } from '@lionrockjs/mod-admin';
 
-import TagType from "../../model/TagType.mjs";
+const TagType = await ORM.import('TagType');
 
 export default class ControllerTagType extends ControllerAdmin{
   constructor(request){
@@ -22,5 +22,3 @@ export default class ControllerTagType extends ControllerAdmin{
     })
   }
 }
-
-module.exports = ControllerTagType;

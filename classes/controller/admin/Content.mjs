@@ -3,7 +3,8 @@ import {Controller} from '@lionrockjs/mvc';
 import {ControllerMixinDatabase, ControllerMixinView, ORMAdapter, Central, ORM} from '@lionrockjs/central';
 import {ControllerMixinORMRead} from '@lionrockjs/mixin-orm';
 import {ControllerAdmin, ControllerMixinImport} from '@lionrockjs/mod-admin';
-import Page from '../../model/Page.mjs';
+
+const Page = await ORM.import('Page');
 
 export default class ControllerAdminContent extends ControllerAdmin{
   constructor(request, options = {}){
