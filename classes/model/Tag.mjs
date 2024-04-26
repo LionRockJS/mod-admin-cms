@@ -21,5 +21,3 @@ export default class Tag extends ORM{
     ["parent_tag", "Tag"]
   ];
 }
-
-module.exports = Tag;

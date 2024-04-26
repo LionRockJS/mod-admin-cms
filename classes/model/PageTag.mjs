@@ -16,5 +16,3 @@ export default class PageTag extends ORM{
     ["page_id", "Page"]
   ]);
 }
-
-module.exports = PageTag;

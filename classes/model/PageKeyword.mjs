@@ -18,5 +18,3 @@ export default class PageKeyword extends ORM {
     ["page_id", "Page"]
   ]);
 }
-
-module.exports = PageKeyword;

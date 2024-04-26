@@ -13,5 +13,3 @@ export default class TagType extends ORM{
     ["tag_type_id", "Tag"]
   ];
 }
-
-module.exports = TagType;
