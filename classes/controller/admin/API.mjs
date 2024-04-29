@@ -3,9 +3,9 @@ import {ControllerMixinDatabase, Central, ORM} from '@lionrockjs/central';
 import {ControllerAdmin} from '@lionrockjs/mod-admin';
 import HelperPageText from "../../helper/PageText";
 
-import DefaultPage from '../../model/Page';
-import DefaultPageTag from '../../model/PageTag';
-import DefaultTagType from '../../model/TagType';
+import DefaultPage from '../../model/Page.mjs';
+import DefaultPageTag from '../../model/PageTag.mjs';
+import DefaultTagType from '../../model/TagType.mjs';
 
 const Page = await ORM.import('Page', DefaultPage);
 const PageTag = await ORM.import('PageTag', DefaultPageTag);

@@ -1,5 +1,5 @@
-const { RouteList } = require('@kohanajs/mod-route');
-const { HelperCRUD: RouteCRUD } = require('@kohanajs/mod-admin');
+import { RouteList } from '@lionrockjs/central';
+import { HelperCRUD } from '@lionrockjs/mod-admin';
 
 RouteList.add('/admin/pages/add-item/:page_id/:item_name', 'controller/admin/Page', 'add_item');
 RouteList.add('/admin/pages/delete-item/:page_id/:item_name/:index', 'controller/admin/Page', 'delete_item');
@@ -14,9 +14,9 @@ RouteList.add('/admin/contents/list/:page_type', 'controller/admin/Content');
 RouteList.add('/admin/contents/import/:page_type', 'controller/admin/Content', 'import_post', 'POST');
 RouteList.add('/admin/contents/create/:page_type', 'controller/admin/Content', 'create_by_type');
 
-RouteCRUD.add('pages', 'controller/admin/Page');
-RouteCRUD.add('tag_types', 'controller/admin/TagType');
-RouteCRUD.add('tags', 'controller/admin/Tag');
+HelperCRUD.add('pages', 'controller/admin/Page');
+HelperCRUD.add('tag_types', 'controller/admin/TagType');
+HelperCRUD.add('tags', 'controller/admin/Tag');
 
 RouteList.add('/admin/api', 'controller/admin/API');
 RouteList.add('/admin/api/pages/:type', 'controller/admin/API', 'pages');
