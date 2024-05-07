@@ -4,8 +4,8 @@ import path from 'node:path';
 import { Controller } from "@lionrockjs/mvc";
 import { ControllerMixinDatabase, ControllerMixinMime, ControllerMixinView, Central } from "@lionrockjs/central";
 import { ControllerMixinLoginRequire } from "@lionrockjs/mod-auth";
-import { ControllerMixinSession } from "@lionrockjs/mod-session";
-import { ControllerMixinMultipartForm } from "@lionrockjs/mod-form";
+import { ControllerMixinSession } from "@lionrockjs/mixin-session";
+import { ControllerMixinMultipartForm } from "@lionrockjs/mixin-form";
 
 export default class ControllerAdminUpload extends Controller{
   static mixins = [...Controller.mixins,

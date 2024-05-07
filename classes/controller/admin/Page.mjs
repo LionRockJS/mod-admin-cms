@@ -2,7 +2,7 @@ import { Controller } from '@lionrockjs/mvc';
 import { ControllerAdmin } from '@lionrockjs/mod-admin';
 import { ControllerMixinDatabase, ControllerMixinView, Central, ORM } from '@lionrockjs/central';
 import { ControllerMixinORMDelete } from '@lionrockjs/mixin-orm';
-import { ControllerMixinMultipartForm } from '@lionrockjs/mod-form';
+import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
 import HelperPageText from "../../helper/PageText.mjs";
 
 import DefaultPage from '../../model/Page.mjs';
