@@ -1,6 +1,6 @@
-import { ORM } from '@lionrockjs/central';
+import { Model } from '@lionrockjs/central';
 
-export default class Tag extends ORM{
+export default class Tag extends Model{
   tag_type_id = null;
   parent_tag = null;
   name = null;

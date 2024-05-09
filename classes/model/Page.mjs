@@ -1,6 +1,6 @@
-import { ORM } from '@lionrockjs/central';
+import { Model } from '@lionrockjs/central';
 
-export default class Page extends ORM{
+export default class Page extends Model{
   name = null;
   slug = null;
   weight = 5;

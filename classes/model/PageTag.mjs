@@ -1,6 +1,6 @@
-import { ORM } from '@lionrockjs/central';
+import { Model } from '@lionrockjs/central';
 
-export default class PageTag extends ORM{
+export default class PageTag extends Model{
   page_id = null;
   tag_id = null;
   weight = 5;

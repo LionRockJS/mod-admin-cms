@@ -1,6 +1,6 @@
-import { ORM } from '@lionrockjs/central';
+import { Model } from '@lionrockjs/central';
 
-export default class PageKeyword extends ORM {
+export default class PageKeyword extends Model {
   page_id = null;
   language_code = null;
   name = null;

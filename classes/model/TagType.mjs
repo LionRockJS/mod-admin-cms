@@ -1,6 +1,6 @@
-import { ORM } from '@lionrockjs/central';
+import { Model } from '@lionrockjs/central';
 
-export default class TagType extends ORM{
+export default class TagType extends Model{
   name = null;
 
   static joinTablePrefix = 'tag_type';
