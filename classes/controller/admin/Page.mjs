@@ -267,8 +267,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     const layout = this.state.get(ControllerMixinView.LAYOUT);
     layout.data = Object.assign({scripts: [], defer_scripts:[]}, layout.data);
-    layout.data.scripts.push('../vendors/tinymce/tinymce.min.js');
-    layout.data.defer_scripts.push('dist/controller_admin_page_read.bundle.js');
+    layout.data.defer_scripts.push('admin/pages/edit.mjs');
 
     this.setEditTemplate(page, livePage, placeholders, templateTags);
   }
