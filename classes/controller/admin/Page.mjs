@@ -187,7 +187,10 @@ export default class ControllerAdminPage extends ControllerAdmin {
     //assign item index as item key
     Object.keys(page.print.tokens).forEach(token =>{
       if(Array.isArray(page.print.tokens[token])){
-        page.print.tokens[token].forEach((it, i) => it._key = i);
+        page.print.tokens[token].forEach((it, i) => {
+          if(typeof it !== 'object')return;
+          it._key = i;
+        });
       }
     })
 
@@ -212,6 +215,27 @@ export default class ControllerAdminPage extends ControllerAdmin {
     templateData.sync         = page.original === livePage?.original && page.slug === livePage.slug;
     templateData.page_type    = page.page_type;
     templateData.tags         = tags;
+
+    const blueprint = Central.config.cms.blueprint[page.page_type] || Central.config.cms.blueprint.default;
+    const attributes = [];
+    const fields = [];
+    const items = [];
+    blueprint.forEach(it => {
+      if(typeof it === 'object'){
+        Object.keys(it).forEach(key => {
+          items.push(it);
+        });
+      }else if(/^@/.test(it)){
+        attributes.push(it.replace('@', ''));
+      }else{
+        fields.push(it.split('__')[0]);
+      }
+    })
+
+    templateData.attributes   = [...(new Set(attributes).values())];
+    templateData.fields       = [...(new Set(fields).values())];
+    templateData.items        = [...(new Set(items).values())]
+    templateData.inputs       = Central.config.cms.inputs;
 
     const tpl = Central.config.cms.blueprint[editTemplateFolder] ? `templates/admin/page/page_types/${editTemplateFolder}/edit` : `templates/admin/page/page_types/default/edit`;
     ControllerMixinView.setTemplate(this.state, tpl, templateData);
