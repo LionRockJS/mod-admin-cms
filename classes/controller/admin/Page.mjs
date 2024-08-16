@@ -223,7 +223,11 @@ export default class ControllerAdminPage extends ControllerAdmin {
     blueprint.forEach(it => {
       if(typeof it === 'object'){
         Object.keys(it).forEach(key => {
-          items.push(it);
+          items.push({
+            name: key,
+            attributes: it[key].filter(it => /^@/.test(it)).map(it => it.replace('@', '')),
+            fields: it[key].filter(it => /^[^@]/.test(it)).map(it => it.split('__')[0])
+          });
         });
       }else if(/^@/.test(it)){
         attributes.push(it.replace('@', ''));

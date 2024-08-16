@@ -58,7 +58,7 @@ export default class HelperPageText{
     const original = {"attributes":{},"values":{},"items":{}};
     original.values[defaultLanguage] = {};
 
-    const blueprint = blueprints[pageType];
+    const blueprint = blueprints[pageType] ?? blueprints.default;
     if(!blueprint)return original;
 
     const attributes = blueprint.filter(it => typeof it !== 'object').filter(it => /^@/.test(it)).map(it => it.substring(1));
