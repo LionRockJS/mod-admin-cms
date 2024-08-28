@@ -189,6 +189,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
       if(Array.isArray(page.print.tokens[token])){
         page.print.tokens[token].forEach((it, i) => {
           if(typeof it !== 'object')return;
+          it._weight = parseInt(it._weight)
           it._key = i;
         });
       }
@@ -200,7 +201,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
       block._key ||= i;
       Object.keys(block.tokens).forEach(token => {
         if(Array.isArray(block.tokens[token])){
-          block.tokens[token].forEach((it, j) => it._key = j);
+          block.tokens[token].forEach((it, j) => {
+            if(it._key) it._key = j
+          });
         }
       })
     })
