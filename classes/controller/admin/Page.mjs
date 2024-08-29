@@ -220,9 +220,35 @@ export default class ControllerAdminPage extends ControllerAdmin {
     templateData.tags         = tags;
 
     const blueprint = Central.config.cms.blueprint[page.page_type] || Central.config.cms.blueprint.default;
+    const {
+      attributes,
+      fields,
+      items
+    } = ControllerAdminPage.get_blueprint_props(blueprint);
+
+    const blocks_blueprint = {};
+    Object.keys(Central.config.cms.blocks).forEach(blockName => {
+      blocks_blueprint[blockName] = ControllerAdminPage.get_blueprint_props(Central.config.cms.blocks[blockName]);
+    })
+
+    templateData.attributes   = [...(new Set(attributes).values())];
+    templateData.fields       = [...(new Set(fields).values())];
+    templateData.items        = [...(new Set(items).values())]
+    templateData.inputs       = Central.config.cms.inputs;
+    templateData.blocks_blueprint = blocks_blueprint;
+
+    const tpl = Central.config.cms.blueprint[editTemplateFolder] ? `templates/admin/page/page_types/${editTemplateFolder}/edit` : `templates/admin/page/page_types/default/edit`;
+    ControllerMixinView.setTemplate(this.state, tpl, templateData);
+  }
+
+  static get_blueprint_props(config_blueprint){
+    //deep copy config
+    const blueprint = JSON.parse(JSON.stringify(config_blueprint))
+
     const attributes = [];
     const fields = [];
     const items = [];
+
     blueprint.forEach(it => {
       if(typeof it === 'object'){
         Object.keys(it).forEach(key => {
@@ -237,26 +263,13 @@ export default class ControllerAdminPage extends ControllerAdmin {
       }else{
         fields.push(it.split('__')[0]);
       }
-    })
+    });
 
-    //copy config
-    const blocks_blueprint = JSON.parse(JSON.stringify(Central.config.cms.blocks));
-    Object.keys(blocks_blueprint).forEach(blockName => {
-      blocks_blueprint[blockName].forEach(it => {
-        if(typeof it === "object"){
-          it._name = Object.keys(it)[0]
-        }
-      })
-    })
-
-    templateData.attributes   = [...(new Set(attributes).values())];
-    templateData.fields       = [...(new Set(fields).values())];
-    templateData.items        = [...(new Set(items).values())]
-    templateData.inputs       = Central.config.cms.inputs;
-    templateData.blocks_blueprint = blocks_blueprint;
-
-    const tpl = Central.config.cms.blueprint[editTemplateFolder] ? `templates/admin/page/page_types/${editTemplateFolder}/edit` : `templates/admin/page/page_types/default/edit`;
-    ControllerMixinView.setTemplate(this.state, tpl, templateData);
+    return{
+      attributes,
+      fields,
+      items
+    }
   }
 
   async action_create(){

@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@lionrockjs/mod-admin-cms",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "The CMS module for LionRockJS",
 
   "main": "index.js",
