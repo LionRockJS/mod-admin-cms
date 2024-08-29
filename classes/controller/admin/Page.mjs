@@ -239,10 +239,21 @@ export default class ControllerAdminPage extends ControllerAdmin {
       }
     })
 
+    //copy config
+    const blocks_blueprint = JSON.parse(JSON.stringify(Central.config.cms.blocks));
+    Object.keys(blocks_blueprint).forEach(blockName => {
+      blocks_blueprint[blockName].forEach(it => {
+        if(typeof it === "object"){
+          it._name = Object.keys(it)[0]
+        }
+      })
+    })
+
     templateData.attributes   = [...(new Set(attributes).values())];
     templateData.fields       = [...(new Set(fields).values())];
     templateData.items        = [...(new Set(items).values())]
     templateData.inputs       = Central.config.cms.inputs;
+    templateData.blocks_blueprint = blocks_blueprint;
 
     const tpl = Central.config.cms.blueprint[editTemplateFolder] ? `templates/admin/page/page_types/${editTemplateFolder}/edit` : `templates/admin/page/page_types/default/edit`;
     ControllerMixinView.setTemplate(this.state, tpl, templateData);
