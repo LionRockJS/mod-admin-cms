@@ -238,11 +238,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     templateData.blocks_blueprint = blocks_blueprint;
 
     const tpl = Central.config.cms.blueprint[editTemplateFolder] ? `templates/admin/page/page_types/${editTemplateFolder}/edit` : `templates/admin/page/page_types/default/edit`;
-    try{
-      ControllerMixinView.setTemplate(this.state, tpl, templateData);
-    }catch(e){
-      ControllerMixinView.setTemplate(this.state, `templates/admin/page/page_types/default/edit`, templateData);
-    }
+    ControllerMixinView.setTemplate(this.state, tpl, templateData, `templates/admin/page/page_types/default/edit`);
   }
 
   static get_blueprint_props(config_blueprint){

@@ -1,8 +1,6 @@
-const {stat, mkdir, copyFile, unlink} = require('node:fs').promises;
-
+import {stat, mkdir, copyFile, unlink} from 'node:fs/promises';
 import path from 'node:path';
-import { Controller } from "@lionrockjs/mvc";
-import { ControllerMixinDatabase, ControllerMixinMime, ControllerMixinView, Central } from "@lionrockjs/central";
+import { Controller, ControllerMixinDatabase, ControllerMixinMime, ControllerMixinView, Central } from "@lionrockjs/central";
 import { ControllerMixinLoginRequire } from "@lionrockjs/mod-auth";
 import { ControllerMixinSession } from "@lionrockjs/mixin-session";
 import { ControllerMixinMultipartForm } from "@lionrockjs/mixin-form";
