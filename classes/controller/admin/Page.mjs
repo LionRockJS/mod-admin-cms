@@ -25,6 +25,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
         ['tag', `${Central.config.cms.databasePath}/www/tag.sqlite`],
       ]),
       database: 'draft',
+      templates: new Map([
+        ['index', 'templates/admin/page/index'],
+      ]),
     });
 
     this.state.get(Controller.STATE_HEADERS)['Access-Control-Allow-Origin']  = '*';
