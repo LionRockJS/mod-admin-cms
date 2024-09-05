@@ -1,6 +1,6 @@
 import pluralize from 'pluralize';
-import {Controller} from '@lionrockjs/mvc';
-import {ControllerMixinDatabase, ControllerMixinView, ORMAdapter, Central, ORM} from '@lionrockjs/central';
+
+import {Controller, ControllerMixinDatabase, ControllerMixinView, ORMAdapter, Central, ORM} from '@lionrockjs/central';
 import {ControllerMixinORMRead} from '@lionrockjs/mixin-orm';
 import {ControllerAdmin, ControllerMixinImport} from '@lionrockjs/mod-admin';
 
@@ -14,10 +14,8 @@ export default class ControllerAdminContent extends ControllerAdmin{
         ['live', `${Central.config.cms.databasePath}/www/content.sqlite`],
         ['draft', `${Central.config.cms.databasePath}/content.sqlite`],
       ]),
-      orderBy: new Map([['weight', 'DESC'], ['created_at', 'DESC']]),
+      orderBy: new Map([[request.query.sort ?? 'weight', request.query.order ?? 'DESC'], ['created_at', 'DESC']]),
       database: 'draft',
-      limit: 99999,
-      pagesize: 50,
       templates: new Map([
         ['index', `templates/admin/page/page_types/default/index`],
       ]),
