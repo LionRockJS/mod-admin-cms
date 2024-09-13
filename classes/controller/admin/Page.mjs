@@ -184,7 +184,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
   setEditTemplate(page, livePage=null, placeholders = {}, tags={}){
     const editTemplateFolder = page.page_type ?? 'default';
-
     const templateData = this.state.get(ControllerMixinView.TEMPLATE).data;
 
     //assign item index as item key
@@ -240,7 +239,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     templateData.inputs       = Central.config.cms.inputs;
     templateData.blocks_blueprint = blocks_blueprint;
 
-    const tpl = Central.config.cms.blueprint[editTemplateFolder] ? `templates/admin/page/page_types/${editTemplateFolder}/edit` : `templates/admin/page/page_types/default/edit`;
+    const tpl = `templates/admin/page/page_types/${editTemplateFolder}/edit`;
     ControllerMixinView.setTemplate(this.state, tpl, templateData, `templates/admin/page/page_types/default/edit`);
   }
 
