@@ -1,0 +1,709 @@
+{
+  "attributes": {},
+  "values": {
+    "en": {
+      "name": "HomePage"
+    },
+    "zh-hant": {},
+    "zh-hans": {}
+  },
+  "items": {
+    "items": [
+      {
+        "attributes": {
+          "_weight": [
+            "0",
+            "0",
+            "0"
+          ]
+        },
+        "values": {
+          "en": {}
+        }
+      },
+      {
+        "attributes": {
+          "_weight": [
+            "1",
+            "1",
+            "1"
+          ]
+        },
+        "values": {}
+      },
+      {
+        "attributes": {
+          "_weight": [
+            "2",
+            "2",
+            "2"
+          ]
+        },
+        "values": {}
+      },
+      {
+        "attributes": {
+          "_weight": [
+            "3",
+            "3"
+          ]
+        },
+        "values": {}
+      },
+      {
+        "attributes": {
+          "_weight": "4"
+        },
+        "values": {}
+      }
+    ],
+    "pictures": [
+      {
+        "attributes": {
+          "_weight": [
+            "0",
+            "0"
+          ]
+        },
+        "values": {}
+      },
+      {
+        "attributes": {
+          "_weight": [
+            "1",
+            "1"
+          ]
+        },
+        "values": {}
+      },
+      {
+        "attributes": {
+          "_weight": [
+            "2",
+            "2"
+          ]
+        },
+        "values": {}
+      },
+      {
+        "attributes": {
+          "_weight": [
+            "3",
+            "4"
+          ]
+        },
+        "values": {}
+      },
+      {
+        "attributes": {
+          "_weight": [
+            "4",
+            "5"
+          ]
+        },
+        "values": {}
+      },
+      {
+        "attributes": {
+          "_weight": [
+            "5",
+            "6"
+          ]
+        },
+        "values": {}
+      },
+      {
+        "attributes": {
+          "_weight": "6"
+        },
+        "values": {}
+      },
+      {
+        "attributes": {
+          "_weight": "7"
+        },
+        "values": {}
+      },
+      {
+        "attributes": {
+          "_weight": "8"
+        },
+        "values": {}
+      },
+      {
+        "attributes": {
+          "_weight": "9"
+        },
+        "values": {}
+      },
+      {
+        "attributes": {
+          "_weight": "10"
+        },
+        "values": {}
+      },
+      {
+        "attributes": {
+          "_weight": "11"
+        },
+        "values": {}
+      }
+    ]
+  },
+  "tags": [],
+  "blocks": [
+    {
+      "attributes": {
+        "_type": "banner",
+        "_weight": "0",
+        "_name": "banner"
+      },
+      "values": {
+        "en": {
+          "link": "",
+          "picture": "/export/shared/resources/images/index/banner/EN_Desktop-80.jpg_1155358884.jpg",
+          "link__url": "https://10th.gte-forum.com/en"
+        },
+        "-file": {},
+        "zh-hant": {
+          "picture": "/export/shared/resources/images/index/banner/TC_Desktop-80.jpg_1155358884.jpg",
+          "link__url": "https://10th.gte-forum.com/zh-hant"
+        },
+        "zh-hans": {
+          "picture": "/export/shared/resources/images/index/banner/SC_Desktop-80.jpg_921850459.jpg",
+          "link__url": "https://10th.gte-forum.com/zh-hans"
+        }
+      },
+      "items": {}
+    },
+    {
+      "attributes": {
+        "_type": "facts",
+        "_weight": "1",
+        "_name": "global-reach",
+        "key": "abc",
+        "date": "2024-08-29"
+      },
+      "values": {
+        "en": {
+          "name": "",
+          "title": "Global Reach",
+          "subject": "Since inception"
+        },
+        "-file": {},
+        "zh-hant": {
+          "title": "驕人成果",
+          "subject": "自開辦以來"
+        },
+        "zh-hans": {
+          "title": "骄人成果",
+          "subject": "自开办以来"
+        }
+      },
+      "items": {
+        "items": [
+          {
+            "attributes": {
+              "_weight": 0
+            },
+            "values": {
+              "en": {
+                "body": "",
+                "title": "12,700+",
+                "subject": "Attendees",
+                "picture": "/shared/resources/images/index/icon_1.png"
+              },
+              "-file": {},
+              "zh-hant": {
+                "subject": "參會者"
+              },
+              "zh-hans": {
+                "subject": "参会者"
+              }
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 1
+            },
+            "values": {
+              "en": {
+                "title": "600",
+                "subject": "World-renowned speakers, including high-level government representative, C-suite executives & leading academia",
+                "picture": "/shared/resources/images/index/icon_2.png"
+              },
+              "-file": {},
+              "zh-hant": {
+                "subject": "世界知名講者，包括國家級領導、知名企業領袖及學術界權威人士等出席"
+              },
+              "zh-hans": {
+                "subject": "世界知名讲者，包括国家级领导、知名企业领袖及学术界权威人士等出席"
+              }
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 2
+            },
+            "values": {
+              "en": {
+                "title": "90",
+                "subject": "Countries & Regions Represented",
+                "picture": "/shared/resources/images/index/icon_3.png"
+              },
+              "-file": {},
+              "zh-hant": {
+                "subject": "國家及地區代表出席"
+              },
+              "zh-hans": {
+                "subject": "国家及地区代表出席"
+              }
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 3
+            },
+            "values": {
+              "en": {
+                "title": "USD 62M",
+                "subject": "Press Coverage Generated Worldwide",
+                "picture": "/shared/resources/images/index/icon_4.png"
+              },
+              "-file": {},
+              "zh-hant": {
+                "subject": "國際媒體價值"
+              },
+              "zh-hans": {
+                "subject": "国际媒体价值"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "attributes": {
+        "_type": "feature",
+        "_weight": "2",
+        "_name": "feature"
+      },
+      "values": {
+        "en": {}
+      },
+      "items": {
+        "items": [
+          {
+            "attributes": {
+              "_weight": 0,
+              "picture": "/export/shared/resources/images/index/20191014-GTEF-20191014-09526-SH-SHP_9073-1.jpg_1153796441.jpg"
+            },
+            "values": {
+              "en": {
+                "title": "GTEF Celebrates Its 10th Edition",
+                "link": "",
+                "body": "<div>Hosted by the Secretariat of Economy and Finance of the Government of Macao Special Administrative Region (GSEF), and in collaboration with the United Nations World Tourism Organization (UNWTO), the Global Tourism Economy Forum is a leading international exchange platform designed to promote the sustainable development of the global tourism sector. The GTEF is co-organized by the Macao Government Tourism Office (MGTO) and the China Chamber of Tourism (CCT), and coordinated by the Global Tourism Economy Research Centre (GTERC).<br><br>Since its inauguration in 2012, GTEF has been dedicated to the promotion of global tourism, the deliberation of the most current topics, and the timely update of cutting-edge trends in the industry, with a particular focus on China. Each year, GTEF is advancing its platform to explore innovative solutions, facilitate sustainable development, and develop new products and new markets to fuel investment. GTEF tailors its program and creates a setting where professionals in global tourism can share innovative and creative solutions, as the way forward for a more resilient, deep-rooted, global tourism economy.</div>",
+                "link__label": " CHECK OUT 10TH GTEF",
+                "link__url": "/en/forum/2020-Edition/index.html"
+              },
+              "zh-hant": {
+                "body": "<div>由澳門特別行政區政府經濟財政司主辦、聯合國世界旅遊組織作為夥伴單位、澳門特別行政區政府旅遊局和全聯旅遊業商會協辦、世界旅遊經濟研究中心籌辦的世界旅遊經濟論壇（“論壇”）是致力於推動世界文旅經濟可持續發展的年度國際文旅業高端交流合作平台。<br><br>“論壇”自2012年於澳門首辦至今，一直致力於促進全球旅遊業發展，審視現今最新的旅遊經濟議題，以中國為焦點，及時更新旅遊和旅行產業的尖端趨勢。每一年，“論壇”平台不斷向前推進，為旅遊產業探索創新的解決方案，促進旅遊業可持續發展，並為旅遊業開發新產品、新市場和新投資。“論壇”為全球旅遊業的專家學者量身訂做了一個絕佳的平台和環境，使他們能在“論壇”上分享具創新、創造性的解決方案，使全球旅遊業向更為柔韌、更為深層的發展方向邁進。</div>",
+                "title": "共慶“論壇”十載"
+              },
+              "zh-hans": {
+                "title": "共庆“论坛”十载",
+                "body": "<div>由澳门特别行政区政府经济财政司主办、联合国世界旅游组织作为伙伴单位、澳门特别行政区政府旅游局和全联旅游业商会协办、世界旅游经济研究中心筹办的世界旅游经济论坛（“论坛”）是致力于推动世界文旅经济可持续发展的年度国际文旅业高端交流合作平台。<br><br>“论坛”自2012年于澳门首办至今，一直致力于促进全球旅游业发展，审视现今最新的旅游经济议题，以中国为焦点，及时更新旅游和旅行产业的尖端趋势。每一年，“论坛”平台不断向前推进，为旅游产业探索创新的解决方案，促进旅游业可持续发展，并为旅游业开发新产品、新市场和新投资。“论坛”为全球旅游业的专家学者量身订做了一个绝佳的平台和环境，使他们能在“论坛”上分享具创新、创造性的解决方案，使全球旅游业向更为柔韧、更为深层的发展方向迈进。</div>"
+              }
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 1,
+              "picture": "/export/shared/resources/images/index/MicrosoftTeams-image-14.png_1786017623.png"
+            },
+            "values": {
+              "en": {
+                "title": "Featured City: Shanghai",
+                "body": "<div>Shanghai epitomizes the melding of dazzling innovation and modernization with history, tradition, and cultural heritage. Home to copious architectural styles, world-class cuisines, and contemporary art and creativity, Shanghai was designated as a UNESCO Creative City of Design in 2010. The city has put in place important initiatives to promote design as an important driver of industry development and social sustainability. Located in the Yangtze River Delta Economic Zone, Shanghai is a center of global finance, and hosts large scale exhibitions such as the China International Import Expo, demonstrating the city’s commitment to strengthen cooperation, promote common prosperity of the world economy, while playing a vital role in the construction of “the Belt and Road Initiative.” Under the grand framework of Shanghai-Macao Cooperation Mechanism, GTEF will further consolidate the two cities' exchange and cooperation in culture and tourism and emphasize the importance of innovation-driven development. Positioning innovation as an engine for sustainable development, GTEF will look at how to leverage technological innovation to energize the culture and tourism industries, thereby molding a new trend in culture and tourism development.</div>"
+              },
+              "zh-hant": {
+                "body": "<div>作為第十屆論壇的主賓市，上海市體現了歷史傳統、文化遺產與創新、現代化的相互融合。上海擁有別樹一格的建築風格、世界一流的美食，以及豐富的當代與創意藝術，更於2010年入選聯合國全球創意城市網絡“設計之都”，上海亦已出台重要的舉措，使創意設計成為產業發展及社會可持續發展的重要驅動力。<br><br>作為長江三角洲城市群的排頭兵，上海是全球金融中心，並舉辦了如“中國國際進口博覽會”等大型重要展會，向外展示了上海加強國內外合作、促進世界經濟共同繁榮的決心，亦在國家“一帶一路”倡議建設中發揮了重要作用。<br><br>而在《滬澳合作總體框架》之下，論壇將進一步深化兩地在文化和旅遊的交流與合作，強調創新驅動發展的重要性，將創新定位為可持續發展的引擎。論壇將研究如何利用科技創新，為文化和旅遊業注入活力，從而塑造出文化和旅遊發展的新趨勢。</div>",
+                "title": "主賓市： 上海"
+              },
+              "zh-hans": {
+                "title": "主宾市： 上海",
+                "body": "<div>作为第十届论坛的主宾市，上海市体现了历史传统、文化遗产与创新、现代化的相互融合。上海拥有别树一格的建筑风格、世界一流的美食，以及丰富的当代与创意艺术，更于2010年入选联合国全球创意城市网络“设计之都”，上海亦已出台重要的举措，使创意设计成为产业发展及社会可持续发展的重要驱动力。<br><br>作为长江三角洲城市群的排头兵，上海是全球金融中心，并举办了如“中国国际进口博览会”等大型重要展会，向外展示了上海加强国内外合作、促进世界经济共同繁荣的决心，亦在国家“一带一路”倡议建设中发挥了重要作用。<br><br>而在《沪澳合作总体框架》之下，论坛将进一步深化两地在文化和旅游的交流与合作，强调创新驱动发展的重要性，将创新定位为可持续发展的引擎。论坛将研究如何利用科技创新，为文化和旅游业注入活力，从而塑造出文化和旅游发展的新趋势。</div>"
+              }
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 2,
+              "picture": "/export/shared/resources/images/gallery/henrique-ferreira-RKsLQoSnuTc-unsplash.jpg_1786017623.jpg"
+            },
+            "values": {
+              "en": {
+                "title": "Partner Country: Italy",
+                "body": "<div>Together with Italy, the birthplace of the Renaissance and one of four biggest economies in Europe, GTEF will further strengthen the bilateral cooperation between China and the EU this year. As the epicenter of the Roman Empire, Italy is home to some of the world’s greatest art, architecture, and gastronomy. It is also home to some of the most well-known houses of style and fashion and is home to the largest number of UNESCO World Heritage Sites in the world. Its cities represent UNESCO Creative Cities of Design, Literature, Design, Film, Gastronomy, and Music. Italy welcomed 64 million tourists in 2019 and is the world’s fifth most visited country, tourism represents a significant part of the national economy. The Ministry of Culture and Tourism of P.R. China has included GTEF in the Sino-Italian Cultural Exchange Mechanism, whose goal is to promote openness in culture and tourism, consolidate mutual learning between Chinese and foreign cultures.</div>"
+              },
+              "zh-hant": {
+                "body": "<div>第十屆論壇將與文藝復興發源地、歐洲四大經濟體之一的意大利合作，共同深化中歐緊密合作關係。意大利位處古羅馬帝國的核心，除了擁有不少偉大的藝術、建築和美食外，亦是國際知名的時尚之都，更擁有僅次於中國、世上第二多聯合國教科文組織（UNESCO）世界遺產的國家，其眾多城市亦被入選聯合國全球創意城市網絡（UCCN）中的文學、設計、電影、美食和音樂之都。<br><br>多年來，意大利的旅客到訪數目均屬世界前列，旅遊業亦對當地經濟有著舉足輕重的地位。論壇早於2020年被國家文化和旅遊部納入“中意文化合作交流機制”的組成部分。</div>",
+                "title": "合作國家： 意大利"
+              },
+              "zh-hans": {
+                "title": "合作国家： 意大利",
+                "body": "<div>第十届论坛将与文艺復兴发源地、欧洲四大经济体之一的意大利合作，共同深化中欧紧密合作关係。意大利位处古罗马帝国的核心，除了拥有不少伟大的艺术、建筑和美食外，亦是国际知名的时尚之都，更拥有仅次于中国、世上第二多联合国教科文组织（UNESCO）世界遗产的国家，其众多城市亦被入选联合国全球创意城市网络（UCCN）中的文学、设计、电影、美食和音乐之都。<br><br>多年来，意大利的旅客到访数目均属世界前列，旅游业亦对当地经济有着举足轻重的地位。论坛早于2020年被国家文化和旅游部纳入“中意文化合作交流机制”的组成部分。</div>"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "attributes": {
+        "_type": "logos",
+        "_weight": "3",
+        "_name": "supports"
+      },
+      "values": {
+        "en": {
+          "label": "SUPPORTING UNITS"
+        },
+        "zh-hant": {
+          "label": "支持單位"
+        },
+        "zh-hans": {
+          "label": "支持单位"
+        }
+      },
+      "items": {
+        "pictures": [
+          {
+            "attributes": {
+              "_weight": 0
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/supports/008.jpg"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 1
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/supports/001.jpg"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 2
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/supports/002.jpg"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 3
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/supports/003.jpg"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 4
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/supports/004.jpg"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 5
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/supports/005.jpg"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 6
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/supports/006.jpg"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 7
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/supports/coop_7.jpg"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 8
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/supports/_Website.jpg"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 9
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/supports/GTEF-website-logo_WTA.jpg"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 10
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/supports/GTEF-website-logo_IMTA.jpg"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          }
+        ]
+      }
+    },
+    {
+      "attributes": {
+        "_type": "logos",
+        "_weight": "4",
+        "_name": "partners"
+      },
+      "values": {
+        "en": {
+          "label": "LEADING PARTNERS"
+        },
+        "zh-hant": {
+          "label": "領銜合作夥伴"
+        },
+        "zh-hans": {
+          "label": "领衔合作伙伴"
+        }
+      },
+      "items": {
+        "pictures": [
+          {
+            "attributes": {
+              "_weight": 0,
+              "width": "2.3rem"
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/spon/001.png"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 1,
+              "width": "2.9rem"
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/sponsor/logos/ner_5.jpg"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 2,
+              "width": "1.2rem"
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/spon/004.png"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 4,
+              "width": "1.4rem"
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/spon/002.png"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 5,
+              "width": "0.8rem"
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/spon/003.png"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 6,
+              "width": "1.4rem"
+            },
+            "values": {
+              "en": {
+                "picture": "/export/shared/resources/images/index/spon/006.png"
+              },
+              "-file": {},
+              "zh-hant": {},
+              "zh-hans": {}
+            }
+          }
+        ]
+      }
+    },
+    {
+      "attributes": {
+        "_type": "cta",
+        "_weight": "5",
+        "_name": "watch-replay"
+      },
+      "values": {
+        "en": {
+          "link": "",
+          "link__label": "Watch Replay",
+          "link__url": "https://10th.gte-forum.com/en"
+        },
+        "zh-hant": {
+          "link__label": "觀看重播",
+          "link__url": "https://10th.gte-forum.com/zh-hant"
+        },
+        "zh-hans": {
+          "link__label": "观看重播",
+          "link__url": "https://10th.gte-forum.com/zh-hans"
+        }
+      },
+      "items": {}
+    },
+    {
+      "attributes": {
+        "_type": "feature_speaker",
+        "_weight": "6",
+        "_name": "speakers"
+      },
+      "values": {
+        "en": {
+          "title": "GTEF 2023 CONFIRMED SPEAKERS"
+        },
+        "zh-hant": {
+          "title": "GTEF 2023 已確認講者"
+        },
+        "zh-hans": {
+          "title": "GTEF 2023 已确认讲者"
+        }
+      },
+      "items": {
+        "items": [
+          {
+            "attributes": {
+              "_weight": 0,
+              "slug": "HUSSAIN-NIYAAZ"
+            },
+            "values": {
+              "en": {}
+            }
+          },
+          {
+            "attributes": {
+              "_weight": 1,
+              "slug": "JULIA-SIMPSON"
+            },
+            "values": {}
+          },
+          {
+            "attributes": {
+              "_weight": 2,
+              "slug": "WANG-BO"
+            },
+            "values": {}
+          },
+          {
+            "attributes": {
+              "_weight": 3,
+              "slug": "PINO-SAGLIOCCO"
+            },
+            "values": {}
+          }
+        ]
+      }
+    }
+  ]
+}

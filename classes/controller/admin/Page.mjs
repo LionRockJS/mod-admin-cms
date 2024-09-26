@@ -3,6 +3,7 @@ import { ControllerAdmin } from '@lionrockjs/mod-admin';
 import { ControllerMixinDatabase, ControllerMixinView, Central, ORM } from '@lionrockjs/central';
 import { ControllerMixinORMDelete } from '@lionrockjs/mixin-orm';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
+import slugify from 'slugify';
 import HelperPageText from "../../helper/PageText.mjs";
 
 import DefaultPage from '../../model/Page.mjs';
@@ -70,7 +71,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     //auto slug
     if($_POST[':slug'] === String(instance.id)){
-      const slug = $_POST[':name'].toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+      const slug = slugify($_POST[':name']);
       const slugExist = await ORM.readBy(Page, 'slug', [slug], {database, asArray:false});
       instance.slug = slugExist ? (slug + instance.id) : slug;
     }
