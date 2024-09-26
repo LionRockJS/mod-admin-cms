@@ -1,4 +1,4 @@
-import {Central, ORM} from '@lionrockjs/central';
+import { Central, ORM} from '@lionrockjs/central';
 import { ControllerAdmin } from '@lionrockjs/mod-admin';
 
 import DefaultTagType from '../../model/TagType.mjs';

@@ -1,7 +1,6 @@
-import {Controller} from '@lionrockjs/mvc';
-import {ControllerMixinDatabase, Central, ORM} from '@lionrockjs/central';
+import {Controller, ControllerMixinDatabase, Central, ORM} from '@lionrockjs/central';
 import {ControllerAdmin} from '@lionrockjs/mod-admin';
-import HelperPageText from "../../helper/PageText";
+import HelperPageText from "../../helper/PageText.mjs";
 
 import DefaultPage from '../../model/Page.mjs';
 import DefaultPageTag from '../../model/PageTag.mjs';
@@ -10,8 +9,6 @@ import DefaultTagType from '../../model/TagType.mjs';
 const Page = await ORM.import('Page', DefaultPage);
 const PageTag = await ORM.import('PageTag', DefaultPageTag);
 const TagType = await ORM.import('TagType', DefaultTagType);
-
-const SQL = ORM.OP;
 
 export default class ControllerAPI extends ControllerAdmin{
   constructor(request){
@@ -68,7 +65,7 @@ export default class ControllerAPI extends ControllerAdmin{
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
     const {page_id, tag_id} = this.state.get(Controller.STATE_PARAMS);
     //check page tag exist
-    const exist = await ORM.readWith(PageTag, [['', 'page_id', SQL.EQUAL, page_id], [SQL.AND, 'tag_id', SQL.EQUAL, tag_id]], {database, limit: 1, asArray:false});
+    const exist = await ORM.readWith(PageTag, [['', 'page_id', 'EQUAL', page_id], ['AND', 'tag_id', 'EQUAL', tag_id]], {database, limit: 1, asArray:false});
     if(exist){
       this.state.set(Controller.STATE_BODY,{
         type: 'ADD_PAGE_TAG',

@@ -6,7 +6,8 @@ import { ControllerMixinSession } from "@lionrockjs/mixin-session";
 import { ControllerMixinMultipartForm } from "@lionrockjs/mixin-form";
 
 export default class ControllerAdminUpload extends Controller{
-  static mixins = [...Controller.mixins,
+  static mixins = [
+    ...Controller.mixins,
     ControllerMixinDatabase,
     ControllerMixinSession,
     ControllerMixinLoginRequire,

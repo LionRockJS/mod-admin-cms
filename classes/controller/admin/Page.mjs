@@ -1,6 +1,5 @@
-import { Controller } from '@lionrockjs/mvc';
 import { ControllerAdmin } from '@lionrockjs/mod-admin';
-import { ControllerMixinDatabase, ControllerMixinView, Central, ORM } from '@lionrockjs/central';
+import { Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM } from '@lionrockjs/central';
 import { ControllerMixinORMDelete } from '@lionrockjs/mixin-orm';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
 import slugify from 'slugify';
@@ -297,8 +296,14 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const placeholders = HelperPageText.originalToPrint(original, language, Central.config.cms.defaultLanguage);
 
     /** parse tags **/
+
     await page.eagerLoad({ with:['PageTag'] }, {database});
-    await ORM.eagerLoad(page.page_tags, {with:['Tag'], tag : {with: ['TagType']}}, {database: tagDatabase});
+    await Promise.all(
+      page.page_tags.map(async page_tag => {
+        page_tag.tag = await ORM.factory(Tag, page_tag.tag_id, {database: tagDatabase});
+        await page_tag.tag.eagerLoad({with:['TagType']}, {database:tagDatabase});
+      })
+    )
 
     page.tags = {};
     page.page_tags.forEach(page_tag => {
