@@ -90,9 +90,11 @@ export default class HelperPageText{
         return;
       }
 
+      //find nested datatype xxx__yyy to xxx: {yyy:""}
       const m = token.match(/^(\w+)__(\w+)$/);
       if(!m)return;
-      tokens[m[1]] ||= {};
+      if(!tokens[m[1]])tokens[m[1]+'_1'] = tokens[m[1]];
+      tokens[m[1]] = {};
       tokens[m[1]][m[2]] = tokens[token];
       delete tokens[token];
     });
