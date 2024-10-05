@@ -1,4 +1,4 @@
-import { RouteList } from '@lionrockjs/central';
+import { RouteList } from '@lionrockjs/router';
 import { HelperCRUD } from '@lionrockjs/mod-admin';
 
 RouteList.add('/admin/pages/add-item/:page_id/:item_name', 'controller/admin/Page', 'add_item');

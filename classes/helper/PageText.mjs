@@ -91,12 +91,17 @@ export default class HelperPageText{
       }
 
       //find nested datatype xxx__yyy to xxx: {yyy:""}
+      //if xxx exist, rename to xxx_1
+      //keep xxx__yyy
       const m = token.match(/^(\w+)__(\w+)$/);
       if(!m)return;
-      if(!tokens[m[1]])tokens[m[1]+'_1'] = tokens[m[1]];
-      tokens[m[1]] = {};
+      if(typeof tokens[m[1]] === 'string'){
+        tokens[m[1]+'_1'] = tokens[m[1]];
+        tokens[m[1]] = {};
+      }
+      //append to exist xxx
+      tokens[m[1]] = tokens[m[1]] || {};
       tokens[m[1]][m[2]] = tokens[token];
-      delete tokens[token];
     });
   }
 
