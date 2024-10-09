@@ -3,6 +3,7 @@ import pluralize from 'pluralize';
 import {Controller, ControllerMixinDatabase, ControllerMixinView, ORMAdapter, Central, ORM} from '@lionrockjs/central';
 import {ControllerMixinORMRead} from '@lionrockjs/mixin-orm';
 import {ControllerAdmin, ControllerMixinImport} from '@lionrockjs/mod-admin';
+import {ControllerMixinAdminTemplates} from "@lionrockjs/mod-admin";
 
 import DefaultPage from '../../model/Page.mjs';
 const Page = await ORM.import('Page', DefaultPage);
@@ -71,5 +72,34 @@ export default class ControllerAdminContent extends ControllerAdmin{
   async action_import_post(){
     const {page_type} = this.state.get(Controller.STATE_PARAMS);
     await this.redirect(`/admin/contents/list/${page_type}`);
+  }
+
+  async action_search(){
+    const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
+    const {page_type} = this.state.get(Controller.STATE_PARAMS);
+
+    const query = this.state.get(Controller.STATE_QUERY).search;
+
+    const page = parseInt(this.state.get(Controller.STATE_QUERY).page ?? '1', 10) - 1;
+    const offset = page * this.options.limit;
+
+    const instances =  await ORM.readWith(Page, [['','page_type', 'EQUAL', page_type], ['AND', 'name', 'LIKE', `%${query}%`]], {database, asArray:true});
+    this.state.set('instances', instances);
+    this.state.set(ControllerMixinORMRead.COUNT, instances.length);
+    this.state.set(ControllerMixinORMRead.PAGINATE, {
+      current_offset: offset,
+      current_page: page + 1,
+      items: instances.length,
+      page_param: 'pages',
+      page_size: this.options.limit,
+      pages: Math.ceil(instances.length / this.options.limit),
+      parts:[],
+      previous:{},
+      next:{},
+    })
+
+    await ControllerMixinAdminTemplates.action_index(this.state);
+
+    await this.action_index();
   }
 }

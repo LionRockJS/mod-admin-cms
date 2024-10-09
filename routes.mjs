@@ -13,6 +13,7 @@ RouteList.add('/admin/pages/un-publish/:id', 'controller/admin/Page', 'unpublish
 RouteList.add('/admin/contents/list/:page_type', 'controller/admin/Content');
 RouteList.add('/admin/contents/import/:page_type', 'controller/admin/Content', 'import_post', 'POST');
 RouteList.add('/admin/contents/create/:page_type', 'controller/admin/Content', 'create_by_type');
+RouteList.add('/admin/contents/search/:page_type', 'controller/admin/Content', 'search');
 
 HelperCRUD.add('pages', 'controller/admin/Page');
 HelperCRUD.add('tag_types', 'controller/admin/TagType');

@@ -70,7 +70,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     //auto slug
     if($_POST[':slug'] === String(instance.id)){
-      const slug = slugify($_POST[':name']);
+      const slug = slugify($_POST[':name']).toLowerCase();
       const slugExist = await ORM.readBy(Page, 'slug', [slug], {database, asArray:false});
       instance.slug = slugExist ? (slug + instance.id) : slug;
     }
@@ -220,6 +220,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     templateData.sync         = page.original === livePage?.original && page.slug === livePage.slug;
     templateData.page_type    = page.page_type;
     templateData.tags         = tags;
+    templateData.landing      = Central.config.cms.landing || '';
 
     const blueprint = Central.config.cms.blueprint[page.page_type] || Central.config.cms.blueprint.default;
     const {
