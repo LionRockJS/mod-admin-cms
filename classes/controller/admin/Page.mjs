@@ -110,6 +110,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
       case "publish":
         await this.publish(instance);
         break;
+      case "revert":
+        await this.revert(instance);
+        break;
       case "block-add":
         await this.block_add(instance, $_POST['block-select']);
         break;
@@ -149,6 +152,13 @@ export default class ControllerAdminPage extends ControllerAdmin {
     if(existPages.length > 0){
       await Promise.all(existPages.map(async it => it.delete()));
     }
+  }
+
+  async revert(page){
+    const database = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
+    const version = await ORM.factory(Page, page.id, {database});
+    page.original = version.original;
+    await page.write();
   }
 
   async publish(page){
