@@ -105,6 +105,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const actionType = actions[0];
     const actionParam = actions[1] ?? "";
     const actionParams = actionParam.split('|');
+    const count = parseInt($_POST['count:'+actionParam] || "1");
+    console.log('count:'+actionParam);
+    console.log($_POST);
 
     switch (actionType){
       case "publish":
@@ -120,13 +123,13 @@ export default class ControllerAdminPage extends ControllerAdmin {
         await this.block_delete(instance, actionParam);
         break;
       case "block-item-add":
-        await this.block_item_add(instance, actionParams[0], actionParams[1]);
+        await this.block_item_add(instance, actionParams[0], actionParams[1], count);
         break;
       case "block-item-delete":
         await this.block_item_delete(instance, actionParams[0], actionParams[1], actionParams[2]);
         break;
       case "item-add":
-        await this.item_add(instance, actionParam);
+        await this.item_add(instance, actionParam, count);
         break;
       case "item-delete":
         await this.item_delete(instance, actionParams[0], actionParams[1]);
@@ -404,11 +407,12 @@ export default class ControllerAdminPage extends ControllerAdmin {
     await page.write();
   }
 
-  async block_item_add(page, blockIndex, itemName){
+  async block_item_add(page, blockIndex, itemName, count=1){
     const original = HelperPageText.getOriginal(page);
     const blockItems = original.blocks[blockIndex].items[itemName];
-    blockItems.push({attributes:{_weight: blockItems.length}, values:{}});
-
+    for(let i=0; i<count; i++){
+      blockItems.push({attributes:{_weight: blockItems.length}, values:{}});
+    }
     page.original = JSON.stringify(original);
     await page.write();
   }
@@ -422,7 +426,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     await page.write();
   }
 
-  async item_add(page, itemName){
+  async item_add(page, itemName, count=1){
     const defaultOriginal = HelperPageText.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en');
     const defaultItem = defaultOriginal.items[itemName][0];
     const original = HelperPageText.getOriginal(page);
@@ -433,7 +437,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
     }
 
     defaultItem.attributes._weight = original.items[itemName].length;
-    original.items[itemName].push(defaultItem);
+    for(let i=0; i<count; i++){
+      original.items[itemName].push(defaultItem);
+    }
 
     page.original = JSON.stringify(original);
     await page.write();
