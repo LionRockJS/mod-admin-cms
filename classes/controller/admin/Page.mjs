@@ -106,8 +106,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const actionParam = actions[1] ?? "";
     const actionParams = actionParam.split('|');
     const count = parseInt($_POST['count:'+actionParam] || "1");
-    console.log('count:'+actionParam);
-    console.log($_POST);
 
     switch (actionType){
       case "publish":
