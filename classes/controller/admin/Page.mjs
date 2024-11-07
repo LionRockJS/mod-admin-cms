@@ -215,7 +215,10 @@ export default class ControllerAdminPage extends ControllerAdmin {
       Object.keys(block.tokens).forEach(token => {
         if(Array.isArray(block.tokens[token])){
           block.tokens[token].forEach((it, j) => {
-            if(it._key) it._key = j
+            if(typeof it !== 'object')return; //do nothing for block fields;
+            // block items
+            it._weight = parseInt(it._weight);
+            it._key = j
           });
         }
       })
