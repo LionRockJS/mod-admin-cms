@@ -235,6 +235,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
     templateData.page_type    = page.page_type;
     templateData.tags         = tags;
     templateData.landing      = Central.config.cms.landing || '';
+    templateData.tag_lists    = Central.config.cms.tagLists[page.page_type] || Central.config.cms.tagLists.default;
+    templateData.block_lists    = Central.config.cms.blockLists[page.page_type] || Central.config.cms.blockLists.default;
 
     const blueprint = Central.config.cms.blueprint[page.page_type] || Central.config.cms.blueprint.default;
     const {

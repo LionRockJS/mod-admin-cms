@@ -10,11 +10,20 @@ export default {
 
   blocks: {
     default: ['@date', 'name', 'body', 'link__label', 'link__url', {items: ["name"]}],
+    label: ['subject'],
     logos : ['label', {pictures:["url"]}],
     paragraphs:["subject", "body", "picture", "caption", "description"],
   },
 
   pageTypeSlugs: {
     default: ['pages', 'articles', 'posts']
-  }
+  },
+
+  blockLists : {
+    default: ["default","label","logos","paragraphs"],
+  },
+
+  tagLists: {
+    default: ['years', 'categories', 'topics', 'collections'],
+  },
 };
