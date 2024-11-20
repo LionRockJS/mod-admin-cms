@@ -318,10 +318,10 @@ export default class ControllerAdminPage extends ControllerAdmin {
       await Promise.all(
         blueprintPageLinkers.map(async it => {
           const key = it.replace('page_', '');
-          const result = await ORM.readBy(Page, 'page_type', [key], {database, asArray:true, limit: 10000, columns:['id', 'name']});
+          const result = await ORM.readBy(Page, 'page_type', [key], {database: liveDatabase, asArray:true, limit: 10000, columns:['id', 'name', 'slug', 'weight']});
           pageLists.push({
             type:key,
-            list: result.map(it => ({id:it.id, name:it.name}))
+            list: result.map(it => ({id:it.id, name:it.name, slug:it.slug, weight:it.weight})).sort((a,b) => b.weight - a.weight)
           });
         })
       );
