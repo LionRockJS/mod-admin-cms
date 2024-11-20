@@ -193,7 +193,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     await this.redirect(`/admin/pages/${id}`, true);
   }
 
-  setEditTemplate(page, livePage=null, placeholders = {}, tags={}){
+  setEditTemplate(page, livePage=null, placeholders = {}, tags={}, pageLists=[]){
     const editTemplateFolder = page.page_type ?? 'default';
     const templateData = this.state.get(ControllerMixinView.TEMPLATE).data;
 
@@ -236,7 +236,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
     templateData.tags         = tags;
     templateData.landing      = Central.config.cms.landing || '';
     templateData.tag_lists    = Central.config.cms.tagLists[page.page_type] || Central.config.cms.tagLists.default;
-    templateData.block_lists    = Central.config.cms.blockLists[page.page_type] || Central.config.cms.blockLists.default;
+    templateData.block_lists  = Central.config.cms.blockLists[page.page_type] || Central.config.cms.blockLists.default;
+    templateData.page_lists   = pageLists;
 
     const blueprint = Central.config.cms.blueprint[page.page_type] || Central.config.cms.blueprint.default;
     const {
@@ -308,6 +309,24 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const original = HelperPageText.getOriginal(page);
     const defaultOriginal = HelperPageText.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage);
 
+    //check blueprint contains page linker
+    const pageLists = [];
+    const blueprint = JSON.stringify(Central.config.cms.blueprint[page.page_type]);
+    const matches = blueprint.match(/page_[^'"]+/gi);
+    if(matches){
+      const blueprintPageLinkers = [...(new Set(matches)).values()];
+      await Promise.all(
+        blueprintPageLinkers.map(async it => {
+          const key = it.replace('page_', '');
+          const result = await ORM.readBy(Page, 'page_type', [key], {database, asArray:true, limit: 10000, columns:['id', 'name']});
+          pageLists.push({
+            type:key,
+            list: result.map(it => ({id:it.id, name:it.name}))
+          });
+        })
+      );
+    }
+
     page.print = HelperPageText.originalToPrint(HelperPageText.mergeOriginals(defaultOriginal, original), language, null);
 
     const placeholders = HelperPageText.originalToPrint(original, language, Central.config.cms.defaultLanguage);
@@ -349,7 +368,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     layout.data = Object.assign({scripts: [], defer_scripts:[]}, layout.data);
     layout.data.defer_scripts.push('admin/pages/edit.mjs');
 
-    this.setEditTemplate(page, livePage, placeholders, templateTags);
+    this.setEditTemplate(page, livePage, placeholders, templateTags, pageLists);
   }
 
   async action_read(){
