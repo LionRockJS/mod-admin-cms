@@ -311,8 +311,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     //check blueprint contains page linker
     const pageLists = [];
-    const blueprint = JSON.stringify(Central.config.cms.blueprint[page.page_type]);
-    const matches = blueprint.match(/page_[^'"]+/gi);
+
+    const blueprint = Central.config.cms.blueprint[page.page_type] || Central.config.cms.blueprint.default;
+    const matches = JSON.stringify(blueprint).match(/page_[^'"]+/gi);
     if(matches){
       const blueprintPageLinkers = [...(new Set(matches)).values()];
       await Promise.all(
