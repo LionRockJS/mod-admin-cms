@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import {stat, mkdir} from 'node:fs/promises';
+
 import { ControllerAdmin } from '@lionrockjs/mod-admin';
 import { Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM } from '@lionrockjs/central';
 import { ControllerMixinORMDelete } from '@lionrockjs/mixin-orm';
@@ -9,6 +12,7 @@ import DefaultPage from '../../model/Page.mjs';
 import DefaultPageTag from '../../model/PageTag.mjs';
 import DefaultTag from '../../model/Tag.mjs';
 import DefaultTagType from '../../model/TagType.mjs';
+import path from "node:path";
 
 const Page = await ORM.import('Page', DefaultPage);
 const PageTag = await ORM.import('PageTag', DefaultPageTag);
@@ -63,6 +67,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     //if no param id, create page proxy
     const instance = this.state.get('instance');
+    const presave = instance.original;
     if(!instance)return;
 
 
@@ -132,6 +137,24 @@ export default class ControllerAdminPage extends ControllerAdmin {
       case "item-delete":
         await this.item_delete(instance, actionParams[0], actionParams[1]);
         break;
+    }
+
+    //save original to json with version path
+    if(JSON.stringify(original) !== presave){
+      const targetFile = `${Central.config.cms.versionPath}/${instance.id}/${instance.slug}.${Math.floor(Date.now()/1000)}.json`;
+      const targetDirectory = path.dirname(targetFile);
+      //create folder if not exist
+      try{
+        await stat(targetDirectory)
+      }catch(err){
+        if(err.code === 'ENOENT'){
+          await mkdir(targetDirectory, {recursive: true});
+        }else{
+          throw err;
+        }
+      }
+
+      fs.writeFileSync(targetFile, JSON.stringify(original, null, 2));
     }
 
     const destination = $_POST.destination || `/admin/pages/${instance.id}`;
@@ -267,29 +290,31 @@ export default class ControllerAdminPage extends ControllerAdmin {
     //deep copy config
     const blueprint = JSON.parse(JSON.stringify(config_blueprint))
 
-    const attributes = [];
-    const fields = [];
+    const attributes = new Set();
+    const fields = new Set();
     const items = [];
 
     blueprint.forEach(it => {
       if(typeof it === 'object'){
         Object.keys(it).forEach(key => {
+          const attributes = new Set(it[key].filter(it => /^@/.test(it)).map(it => it.replace('@', '')));
+          const fields = new Set(it[key].filter(it => /^[^@]/.test(it)).map(it => it.split('__')[0]));
           items.push({
             name: key,
-            attributes: it[key].filter(it => /^@/.test(it)).map(it => it.replace('@', '')),
-            fields: it[key].filter(it => /^[^@]/.test(it)).map(it => it.split('__')[0])
+            attributes: [...attributes.keys()],
+            fields: [...fields.keys()],
           });
         });
       }else if(/^@/.test(it)){
-        attributes.push(it.replace('@', ''));
+        attributes.add(it.replace('@', ''));
       }else{
-        fields.push(it.split('__')[0]);
+        fields.add(it.split('__')[0]);
       }
     });
 
     return{
-      attributes,
-      fields,
+      attributes: [...attributes.keys()],
+      fields: [...fields.keys()],
       items
     }
   }
@@ -461,9 +486,10 @@ export default class ControllerAdminPage extends ControllerAdmin {
       original.items[itemName] = HelperPageText.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en').items[itemName]
     }
 
-    defaultItem.attributes._weight = original.items[itemName].length;
     for(let i=0; i<count; i++){
-      original.items[itemName].push(defaultItem);
+      const item = JSON.parse(JSON.stringify(defaultItem));
+      item.attributes._weight = original.items[itemName].length;
+      original.items[itemName].push(item);
     }
 
     page.original = JSON.stringify(original);

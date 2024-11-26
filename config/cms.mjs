@@ -2,6 +2,7 @@ import {Central} from '@lionrockjs/central';
 export default {
   landing: '',
   databasePath: `${Central.APP_PATH}/../database`,
+  versionPath: `${Central.APP_PATH}/../database/versions`,
   defaultLanguage: 'en',
   languages: ['en', 'zh-hant'],
   blueprint: {
