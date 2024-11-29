@@ -63,14 +63,12 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
   async action_update() {
     const $_POST = this.state.get(ControllerMixinMultipartForm.POST_DATA);
-    if($_POST.action === 'publish_weights')await this.publish_weights()
+    if($_POST.action === 'publish_weights')await this.publish_weights();
 
     //if no param id, create page proxy
     const instance = this.state.get('instance');
-    const presave = instance.original;
     if(!instance)return;
-
-
+    const presave = instance.original;
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
 
     //auto slug
