@@ -1,29 +1,27 @@
-import url from "node:url";
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
-
 import path from 'node:path';
 import { build } from '@lionrockjs/start';
 
+const __dirname = path.dirname(import.meta.url).replace("file://", "");
+
 build(
-  `${__dirname}/content.graphql`,
-  ``,
-  `${__dirname}/exports/content.sql`,
-  `${__dirname}/default/db/www/content.sqlite`,
-  path.normalize(`${__dirname}/classes/content/model`)
+  __dirname,
+  '',
+  `content`,
+  '',
+  false,
+  false
 );
 
 build(
-  `${__dirname}/content.graphql`,
-  ``,
-  `${__dirname}/exports/content-draft.sql`,
-  `${__dirname}/default/db/content.sqlite`,
-  path.normalize(`${__dirname}/classes/contentDraft/model`)
+  __dirname,
+  '',
+  'content',
+  'www',
 );
 
 build(
-  `${__dirname}/tag.graphql`,
-  ``,
-  `${__dirname}/exports/tag.sql`,
-  `${__dirname}/default/db/www/tag.sqlite`,
-  path.normalize(`${__dirname}/classes/tag/model`)
+  __dirname,
+  '',
+  'tag',
+  'www',
 );
