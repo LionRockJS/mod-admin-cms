@@ -1,0 +1,36 @@
+@startuml
+skinparam Shadowing false
+
+title Page Read
+
+start
+
+#000:<color:#FFF>ControllerContent:action_edit</color>;
+:read draft, content and tag by id, language;
+:getOriginal by draft;
+:get blueprint by page type;
+:? page List by blueprint page linker;
+:get print from draft original;
+:parse tags;
+:layout push defer script;
+:set edit template
+<b>page</b>
+livePage
+placeholders
+tags
+pageLists;
+:assign item index as item key;
+:assign block index as block key,
+block item index as block item key;
+:set template data;
+:get attributes, fields, items from blueprint;
+:read blocks from blueprint;
+:set template data
+-attributes
+-fields
+-items
+-inputs
+-block_blueprint;
+-view set template;
+end
+@enduml

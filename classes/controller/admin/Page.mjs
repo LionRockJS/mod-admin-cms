@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import {stat, mkdir} from 'node:fs/promises';
 
 import { ControllerAdmin } from '@lionrockjs/mod-admin';
-import { Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM } from '@lionrockjs/central';
+import { Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM, Model } from '@lionrockjs/central';
 import { ControllerMixinORMDelete } from '@lionrockjs/mixin-orm';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
 import slugify from 'slugify';
@@ -19,13 +19,17 @@ const PageTag = await ORM.import('PageTag', DefaultPageTag);
 const Tag = await ORM.import('Tag', DefaultTag);
 const TagType = await ORM.import('TagType', DefaultTagType);
 
+const capitalize = val => String(val).charAt(0).toUpperCase() + String(val).slice(1);
+
 export default class ControllerAdminPage extends ControllerAdmin {
   constructor(request) {
     super(request, Page, {
       roles: new Set(['admin', 'staff']),
       databases: new Map([
         ['draft', `${Central.config.cms.databasePath}/content.sqlite`],
+        ['draft_attribute', `${Central.config.cms.databasePath}/content_attribute.sqlite`],
         ['live', `${Central.config.cms.databasePath}/www/content.sqlite`],
+        ['live_attribute', `${Central.config.cms.databasePath}/www/content_attribute.sqlite`],
         ['tag', `${Central.config.cms.databasePath}/www/tag.sqlite`],
       ]),
       database: 'draft',
@@ -97,6 +101,18 @@ export default class ControllerAdminPage extends ControllerAdmin {
     instance.original = JSON.stringify(original);
     await instance.write();
 
+    const dbAttribute = this.state.get(ControllerMixinDatabase.DATABASES).get('draft_attribute');
+    const PageModel = await ORM.import("page/" + capitalize(instance.page_type), ORM);
+    if(PageModel !== ORM){ // page attribute model exists,
+      //delete all attributes by page_id
+      await ORM.deleteBy(PageModel, 'id', [instance.id], {database: dbAttribute});
+
+      //write all attributes with page_id
+      const attr = ORM.create(PageModel, {database: dbAttribute, insertID: instance.id});
+      Object.assign(attr, original.attributes);
+      await attr.write();
+    }
+
     const {session} = this.state.get(Controller.STATE_REQUEST)
     session.autosave = $_POST['autosave'];
 
@@ -163,6 +179,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
     const livePage = await ORM.readBy(Page, 'id', [instance.id], {database, limit: 1, asArray: false});
     if(!livePage)return;
+    if(livePage.start === instance.start && livePage.end === instance.end)return;
+
     livePage.start = instance.start;
     livePage.end   = instance.end;
     await livePage.write();
@@ -173,6 +191,13 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const existPages = await ORM.readBy(Page, 'id', [id], {database, asArray:true});
     if(existPages.length > 0){
       await Promise.all(existPages.map(async it => it.delete()));
+      //remove live attributes
+      const dbAttribute = this.state.get(ControllerMixinDatabase.DATABASES).get('live_attribute');
+      const PageModel = await ORM.import("page/" + capitalize(existPages[0].page_type), ORM);
+      if(PageModel !== ORM){ // page attribute model exists,
+        //delete all attributes by page_id
+        await ORM.deleteBy(PageModel, 'id', [id], {database: dbAttribute});
+      }
     }
   }
 
@@ -206,6 +231,17 @@ export default class ControllerAdminPage extends ControllerAdmin {
       livePageTag.weight = page.weight;
       livePageTag.write();
     }));
+
+    //copy attributes
+    const dbAttribute = this.state.get(ControllerMixinDatabase.DATABASES).get('live_attribute');
+    const PageModel = await ORM.import("page/" + capitalize(page.page_type), ORM);
+    if(PageModel !== ORM){ // page attribute model exists,
+      //write all attributes with page_id
+      const attr = ORM.create(PageModel, {database: dbAttribute, insertID: page.id});
+      const original = HelperPageText.getOriginal(page);
+      Object.assign(attr, original.attributes);
+      await attr.write();
+    }
   }
 
   async action_unpublish(){
@@ -284,35 +320,54 @@ export default class ControllerAdminPage extends ControllerAdmin {
     ControllerMixinView.setTemplate(this.state, tpl, templateData, `templates/admin/page/page_types/default/edit`);
   }
 
+  static getAttribute(rawKey){
+    const keyParts = rawKey.split(':');
+    return {
+      name: keyParts[0].replace('@', ''),
+      type: keyParts[1] || 'text',
+    };
+  }
+
+  static getField(rawKey){
+    const keyParts = rawKey.split(':');
+    return {
+      name: keyParts[0].split('__')[0],
+      type: keyParts[1] || 'text',
+    };
+  }
+
   static get_blueprint_props(config_blueprint){
     //deep copy config
     const blueprint = JSON.parse(JSON.stringify(config_blueprint))
 
-    const attributes = new Set();
-    const fields = new Set();
+    const attributes = [];
+    const fields = [];
     const items = [];
 
     blueprint.forEach(it => {
       if(typeof it === 'object'){
         Object.keys(it).forEach(key => {
-          const attributes = new Set(it[key].filter(it => /^@/.test(it)).map(it => it.replace('@', '')));
-          const fields = new Set(it[key].filter(it => /^[^@]/.test(it)).map(it => it.split('__')[0]));
+          const rawAttributes = it[key].filter(it => /^@/.test(it));
+          const rawFields = it[key].filter(it => /^[^@]/.test(it));
+          const attributes = rawAttributes.map(it => this.getAttribute(it));
+          const fields = rawFields.map(it => this.getField(it));
+
           items.push({
             name: key,
-            attributes: [...attributes.keys()],
-            fields: [...fields.keys()],
+            attributes: attributes,
+            fields: fields,
           });
         });
       }else if(/^@/.test(it)){
-        attributes.add(it.replace('@', ''));
+        attributes.push(this.getAttribute(it));
       }else{
-        fields.add(it.split('__')[0]);
+        fields.push(this.getField(it));
       }
     });
 
     return{
-      attributes: [...attributes.keys()],
-      fields: [...fields.keys()],
+      attributes,
+      fields,
       items
     }
   }
@@ -334,10 +389,10 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const original = HelperPageText.getOriginal(page);
     const defaultOriginal = HelperPageText.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage);
 
+    const blueprint = Central.config.cms.blueprint[page.page_type] || Central.config.cms.blueprint.default;
+
     //check blueprint contains page linker
     const pageLists = [];
-
-    const blueprint = Central.config.cms.blueprint[page.page_type] || Central.config.cms.blueprint.default;
     const matches = JSON.stringify(blueprint).match(/page_[^'"]+/gi);
     if(matches){
       const blueprintPageLinkers = [...(new Set(matches)).values()];
@@ -357,8 +412,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     const placeholders = HelperPageText.originalToPrint(original, language, Central.config.cms.defaultLanguage);
 
-    /** parse tags **/
-
+    /** parse tags across database **/
     await page.eagerLoad({ with:['PageTag'] }, {database});
     await Promise.all(
       page.page_tags.map(async page_tag => {
@@ -405,6 +459,15 @@ export default class ControllerAdminPage extends ControllerAdmin {
     if(this.state.get(ControllerMixinORMDelete.DELETED)){
       const page = this.state.get(ControllerMixinORMDelete.INSTANCE);
       await this.unpublish(page.id);
+
+      //remove attribute
+      const dbAttribute = this.state.get(ControllerMixinDatabase.DATABASES).get('draft_attribute');
+      const PageModel = await ORM.import("page/" + capitalize(page.page_type), ORM);
+      if(PageModel !== ORM){ // page attribute model exists,
+        //delete all attributes by page_id
+        await ORM.deleteBy(PageModel, 'id', [page.id], {database: dbAttribute});
+      }
+
       //redirect to page type index
       await this.redirect(`/admin/contents/list/${page.page_type}`, true);
     }

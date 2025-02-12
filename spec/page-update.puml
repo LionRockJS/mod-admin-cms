@@ -1,0 +1,30 @@
+@startuml
+skinparam Shadowing false
+
+title Page Update
+
+start
+
+#000:<color:#FFF>ControllerContent:action_update</color>;
+:ORM update;
+
+
+:replace slug by name if empty;
+
+:Update original by language with post data;
+
+:load tags and write to original;
+
+:write page;
+
+:write attribute if page/PageTypeModel exist;
+
+:update live schedule;
+
+:additional actions;
+
+:write versioned json file;
+
+:redirect;
+end
+@enduml

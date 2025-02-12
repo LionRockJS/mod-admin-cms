@@ -7,6 +7,7 @@ const def = {
   ]
 }
 
+
 const sample = {
   "attributes": {
     "date": "26-09-2021",
@@ -31,7 +32,9 @@ const sample = {
           "picture": "/media/images/example.png"
         },
         "values": {
-          "caption": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+          "en": {
+            "caption": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+          },
         }
       },
       {
@@ -39,7 +42,9 @@ const sample = {
           "picture": "/media/images/example_2.png"
         },
         "values": {
-          "caption": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+          "en": {
+            "caption": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+          }
         }
       }
     ],
