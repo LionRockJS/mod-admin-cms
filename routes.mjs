@@ -10,10 +10,10 @@ RouteList.add('/admin/pages/delete-block-item/:page_id/:block_index/:item_name/:
 
 RouteList.add('/admin/pages/un-publish/:id', 'controller/admin/Page', 'unpublish');
 
-RouteList.add('/admin/contents/list/:page_type', 'controller/admin/Content');
-RouteList.add('/admin/contents/import/:page_type', 'controller/admin/Content', 'import_post', 'POST');
-RouteList.add('/admin/contents/create/:page_type', 'controller/admin/Content', 'create_by_type');
-RouteList.add('/admin/contents/search/:page_type', 'controller/admin/Content', 'search');
+RouteList.add('/admin/pages/list/:page_type', 'controller/admin/Page');
+RouteList.add('/admin/pages/import/:page_type', 'controller/admin/Page', 'import_post', 'POST');
+RouteList.add('/admin/pages/create_by_type/:page_type', 'controller/admin/Page', 'create_by_type');
+RouteList.add('/admin/pages/search/:page_type', 'controller/admin/Page', 'search');
 
 HelperCRUD.add('pages', 'controller/admin/Page');
 HelperCRUD.add('tag_types', 'controller/admin/TagType');

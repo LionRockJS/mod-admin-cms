@@ -1,9 +1,10 @@
+import pluralize from 'pluralize';
 import fs from 'node:fs';
 import {stat, mkdir} from 'node:fs/promises';
 
-import { ControllerAdmin } from '@lionrockjs/mod-admin';
-import { Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM, Model } from '@lionrockjs/central';
-import { ControllerMixinORMDelete } from '@lionrockjs/mixin-orm';
+import {ControllerAdmin, ControllerMixinAdminTemplates, ControllerMixinImport} from '@lionrockjs/mod-admin';
+import {Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM, Model} from '@lionrockjs/central';
+import {ControllerMixinORMDelete, ControllerMixinORMRead} from '@lionrockjs/mixin-orm';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
 import slugify from 'slugify';
 import HelperPageText from "../../helper/PageText.mjs";
@@ -22,7 +23,10 @@ const TagType = await ORM.import('TagType', DefaultTagType);
 const capitalize = val => String(val).charAt(0).toUpperCase() + String(val).slice(1);
 
 export default class ControllerAdminPage extends ControllerAdmin {
-  constructor(request) {
+  page_type = 'default';
+  controller_slug = 'pages';
+
+  constructor(request, options = {}) {
     super(request, Page, {
       roles: new Set(['admin', 'staff']),
       databases: new Map([
@@ -32,14 +36,98 @@ export default class ControllerAdminPage extends ControllerAdmin {
         ['live_attribute', `${Central.config.cms.databasePath}/www/content_attribute.sqlite`],
         ['tag', `${Central.config.cms.databasePath}/www/tag.sqlite`],
       ]),
+      orderBy: new Map([[request.query.sort ?? 'weight', request.query.order ?? 'DESC'], ['created_at', 'DESC']]),
       database: 'draft',
       templates: new Map([
-        ['index', 'templates/admin/page/index'],
+        ['index', `templates/admin/page/page_types/default/index`],
       ]),
+      page_type: 'default',
+      controller_slug: 'pages',
+      ...options,
     });
 
     this.state.get(Controller.STATE_HEADERS)['Access-Control-Allow-Origin']  = '*';
     this.state.set(Controller.STATE_LANGUAGE, this.state.get(Controller.STATE_LANGUAGE) || Central.config.cms.defaultLanguage || 'en');
+
+    this.page_type = this.state.get(Controller.STATE_PARAMS).page_type || this.options.page_type;
+    this.controller_slug = this.options.controller_slug;
+
+    this.state.set(ControllerMixinImport.UNIQUE_KEY, 'slug');
+    this.state.set(ControllerMixinORMRead.LIST_FILTER, [['AND', 'page_type', 'EQUAL', this.page_type]]);
+  }
+
+  async action_index(){
+    const page_type = this.page_type;
+
+    const instances = this.state.get('instances');
+
+    const database = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
+    const livePages = await ORM.readBy(Page, 'page_type', [page_type], {database, asArray:true});
+    const livePageMap = new Map(livePages.map(page => [page.id, page]));
+
+    const items = instances.filter(it => it.page_type === page_type);
+    items.forEach(page => {
+      const livePage = livePageMap.get(page.id);
+      page.published = !!livePage;
+      if(page.published){
+        page.live_weight = livePage.weight;
+        page.synced = page.original === livePage.original && page.slug === livePage.slug;
+      }
+    });
+
+    Object.assign(
+      this.state.get(ControllerMixinView.TEMPLATE).data,
+      { items, page_type }
+    );
+  }
+
+  async action_create_by_type(){
+    const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
+    const page_type = this.page_type;
+
+    const weight = await ORM.countBy(Page, 'page_type', [page_type], {database});
+    const insertID = Model.defaultAdapter.defaultID();
+    const page = ORM.create(Page, {database, insertID});
+    page.name = `Untitled ${pluralize.singular(page_type.replace(/[_-]/gi, ' '))}`;
+    page.page_type = page_type;
+    page.slug = String(insertID);
+    page.weight = weight + 1;
+    await page.write();
+
+    await this.redirect(`/admin/${this.controller_slug}/${page.id}`);
+  }
+
+  async action_import_post(){
+    await this.redirect(`/admin/${this.controller_slug}/list/${this.page_type}`);
+  }
+
+  async action_search(){
+    const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
+    const page_type = this.page_type;
+
+    const query = this.state.get(Controller.STATE_QUERY).search;
+
+    const page = parseInt(this.state.get(Controller.STATE_QUERY).page ?? '1', 10) - 1;
+    const offset = page * this.options.limit;
+
+    const instances =  await ORM.readWith(Page, [['','page_type', 'EQUAL', page_type], ['AND', 'name', 'LIKE', `%${query}%`]], {database, asArray:true});
+    this.state.set('instances', instances);
+    this.state.set(ControllerMixinORMRead.COUNT, instances.length);
+    this.state.set(ControllerMixinORMRead.PAGINATE, {
+      current_offset: offset,
+      current_page: page + 1,
+      items: instances.length,
+      page_param: 'pages',
+      page_size: this.options.limit,
+      pages: Math.ceil(instances.length / this.options.limit),
+      parts:[],
+      previous:{},
+      next:{},
+    })
+
+    await ControllerMixinAdminTemplates.action_index(this.state);
+
+    await this.action_index();
   }
 
   async publish_weights(){
@@ -67,6 +155,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
   async action_update() {
     const $_POST = this.state.get(ControllerMixinMultipartForm.POST_DATA);
+
     if($_POST.action === 'publish_weights')await this.publish_weights();
 
     //if no param id, create page proxy
@@ -171,7 +260,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
       fs.writeFileSync(targetFile, JSON.stringify(original, null, 2));
     }
 
-    const destination = $_POST.destination || `/admin/pages/${instance.id}`;
+    const destination = $_POST.destination || `/admin/${this.controller_slug}/${instance.id}`;
     await this.redirect(destination, !$_POST.destination);
   }
 
@@ -247,7 +336,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
   async action_unpublish(){
     const {id} = this.state.get(Controller.STATE_PARAMS)
     await this.unpublish(id);
-    await this.redirect(`/admin/pages/${id}`, true);
+    await this.redirect(`/admin/${this.controller_slug}/${id}`, true);
   }
 
   setEditTemplate(page, livePage=null, placeholders = {}, tags={}, pageLists=[]){
@@ -328,6 +417,14 @@ export default class ControllerAdminPage extends ControllerAdmin {
     };
   }
 
+  static getPointer(rawKey){
+    const keyParts = rawKey.split(':');
+    return {
+      name: keyParts[0].replace('*', ''),
+      type: keyParts[1] || 'default',
+    };
+  }
+
   static getField(rawKey){
     const keyParts = rawKey.split(':');
     return {
@@ -343,12 +440,14 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const attributes = [];
     const fields = [];
     const items = [];
+    const pointers = [];
 
     blueprint.forEach(it => {
       if(typeof it === 'object'){
         Object.keys(it).forEach(key => {
           const rawAttributes = it[key].filter(it => /^@/.test(it));
           const rawFields = it[key].filter(it => /^[^@]/.test(it));
+          const rawPointers = it[key].filter(it => /^[^\*]/.test(it));
           const attributes = rawAttributes.map(it => this.getAttribute(it));
           const fields = rawFields.map(it => this.getField(it));
 
@@ -356,10 +455,13 @@ export default class ControllerAdminPage extends ControllerAdmin {
             name: key,
             attributes: attributes,
             fields: fields,
+            pointers: rawPointers,
           });
         });
       }else if(/^@/.test(it)){
         attributes.push(this.getAttribute(it));
+      }else if(/^\*/.test(it)){
+        pointers.push(this.getPointer(it));
       }else{
         fields.push(this.getField(it));
       }
@@ -368,7 +470,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
     return{
       attributes,
       fields,
-      items
+      items,
+      pointers
     }
   }
 
@@ -469,7 +572,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
       }
 
       //redirect to page type index
-      await this.redirect(`/admin/contents/list/${page.page_type}`, true);
+      await this.redirect(`/admin/pages/list/${page.page_type}`, true);
     }
   }
 
@@ -583,7 +686,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     if(!page) throw new Error(`Page ${pageId} not found`);
 
     await this.block_delete(page, blockIndex);
-    await this.redirect(`/admin/pages/${pageId}`,true);
+    await this.redirect(`/admin/${this.controller_slug}/${pageId}`,true);
   }
 
   async action_add_block_item(){
@@ -592,7 +695,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
     const page = await ORM.factory(Page, pageId, {database});
     await this.block_item_add(page, blockIndex, itemName);
-    await this.redirect(`/admin/pages/${pageId}`, true);
+    await this.redirect(`/admin/${this.controller_slug}/${pageId}`, true);
   }
 
   async action_delete_block_item(){
@@ -601,6 +704,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const page = await ORM.factory(Page, pageId, {database});
     await this.block_item_delete(page, blockIndex, itemName, itemIndex);
 
-    await this.redirect(`/admin/pages/${pageId}`, true);
+    await this.redirect(`/admin/${this.controller_slug}/${pageId}`, true);
   }
 }
