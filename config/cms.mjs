@@ -7,6 +7,8 @@ export default {
   languages: ['en', 'zh-hant'],
   blueprint: {
     default: ['@date', 'name', 'body', 'link__label', 'link__url', {items: ["name"]}],
+    contact:['name', {position:['*company', 'name', 'address', 'title']}],
+    company:['name', 'address'],
   },
 
   blocks: {
