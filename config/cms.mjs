@@ -1,5 +1,6 @@
 import {Central} from '@lionrockjs/central';
 export default {
+  timezone: '+0800',
   landing: '',
   databasePath: `${Central.APP_PATH}/../database`,
   versionPath: `${Central.APP_PATH}/../database/versions`,

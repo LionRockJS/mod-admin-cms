@@ -1,0 +1,43 @@
+@startuml
+skinparam Shadowing false
+
+title Page Create
+
+start
+
+#000:<color:#FFF>ControllerAdminPage:action_edit</color>;
+:define data source;
+:read draft by id, live page by id;
+
+fork
+#000:<color:#FFF>Prepare Content</color>;
+:get draft original;
+:get default original by page type with blueprint;
+
+:merge original;
+:get print from merged original;
+
+:resolve pointers;
+:prepare placeholders by get print from
+merged original with default language;
+
+:read tags by page;
+
+fork again
+
+
+
+end fork
+
+:setEditTemplate(page, livePage, placeholders, tags);
+
+:assign item index and block index;
+
+:scaffold use blueprint props to render form;
+
+end
+
+
+
+
+@enduml

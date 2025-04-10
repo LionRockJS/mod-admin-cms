@@ -1,4 +1,5 @@
 import pluralize from 'pluralize';
+import path from "node:path";
 import fs from 'node:fs';
 import {stat, mkdir} from 'node:fs/promises';
 
@@ -7,13 +8,13 @@ import {Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM, 
 import {ControllerMixinORMDelete, ControllerMixinORMRead} from '@lionrockjs/mixin-orm';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
 import slugify from 'slugify';
-import HelperPageText from "../../helper/PageText.mjs";
 
 import DefaultPage from '../../model/Page.mjs';
 import DefaultPageTag from '../../model/PageTag.mjs';
 import DefaultTag from '../../model/Tag.mjs';
 import DefaultTagType from '../../model/TagType.mjs';
-import path from "node:path";
+import HelperPageText from '../../helper/PageText.mjs';
+import HelperPageEdit from "../../helper/PageEdit.mjs";
 
 const Page = await ORM.import('Page', DefaultPage);
 const PageTag = await ORM.import('PageTag', DefaultPageTag);
@@ -76,8 +77,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
     });
 
     Object.assign(
-      this.state.get(ControllerMixinView.TEMPLATE).data,
-      { items, page_type }
+        this.state.get(ControllerMixinView.TEMPLATE).data,
+        { items, page_type }
     );
   }
 
@@ -171,10 +172,14 @@ export default class ControllerAdminPage extends ControllerAdmin {
       instance.slug = slugExist ? (slug + instance.id) : slug;
     }
 
+//    const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
+    console.log($_POST);
+//    console.log(JSON.stringify(postOriginal, null, 2));
+
     const original = HelperPageText.getOriginal(instance);
     //update original
     Object.keys($_POST).forEach(name => {
-      HelperPageText.update(original, name, $_POST[name], this.state.get(Controller.STATE_LANGUAGE))
+      HelperPageEdit.update(original, name, $_POST[name], this.state.get(Controller.STATE_LANGUAGE))
     });
 
     //collect tags and write to original
@@ -339,11 +344,10 @@ export default class ControllerAdminPage extends ControllerAdmin {
     await this.redirect(`/admin/${this.controller_slug}/${id}`, true);
   }
 
-  setEditTemplate(page, livePage=null, placeholders = {}, tags={}, pageLists=[]){
-    const editTemplateFolder = page.page_type ?? 'default';
-    const templateData = this.state.get(ControllerMixinView.TEMPLATE).data;
-
-    //assign item index as item key
+  setEditTemplate(page, livePage=null, placeholders = {}, tags={}){
+    //the sequence of item in original is not change, but the weight can be changed
+    //template render in order of weight
+    //so that assign item index as item key
     Object.keys(page.print.tokens).forEach(token =>{
       if(Array.isArray(page.print.tokens[token])){
         page.print.tokens[token].forEach((it, i) => {
@@ -370,11 +374,14 @@ export default class ControllerAdminPage extends ControllerAdmin {
       })
     })
 
+    const templateData = this.state.get(ControllerMixinView.TEMPLATE).data;
+
     templateData.tokens       = page.print.tokens;
     templateData.blocks       = page.print.blocks;
     templateData.block_names  = Object.keys(Central.config.cms.blocks) || [];
     templateData.language     = this.state.get(Controller.STATE_LANGUAGE);
     templateData.placeholders = placeholders;
+
     templateData.autosave     = this.state.get(Controller.STATE_REQUEST).session.autosave;
     templateData.published    = !!livePage;
     templateData.sync         = page.original === livePage?.original && page.slug === livePage.slug;
@@ -383,101 +390,65 @@ export default class ControllerAdminPage extends ControllerAdmin {
     templateData.landing      = Central.config.cms.landing || '';
     templateData.tag_lists    = Central.config.cms.tagLists[page.page_type] || Central.config.cms.tagLists.default;
     templateData.block_lists  = Central.config.cms.blockLists[page.page_type] || Central.config.cms.blockLists.default;
-    templateData.page_lists   = pageLists;
+
     templateData.original     = page.original;
     templateData.live_original= livePage?.original || {};
 
+    console.log(page.original);
+
     const blueprint = Central.config.cms.blueprint[page.page_type] || Central.config.cms.blueprint.default;
-    const {
-      attributes,
-      fields,
-      items
-    } = ControllerAdminPage.get_blueprint_props(blueprint);
+    templateData.blueprint_props = HelperPageEdit.get_blueprint_props(blueprint);
 
     const blocks_blueprint = {};
     Object.keys(Central.config.cms.blocks).forEach(blockName => {
-      blocks_blueprint[blockName] = ControllerAdminPage.get_blueprint_props(Central.config.cms.blocks[blockName]);
+      blocks_blueprint[blockName] = HelperPageEdit.get_blueprint_props(Central.config.cms.blocks[blockName]);
     })
-
-    templateData.attributes   = [...(new Set(attributes).values())];
-    templateData.fields       = [...(new Set(fields).values())];
-    templateData.items        = [...(new Set(items).values())]
     templateData.inputs       = Central.config.cms.inputs;
     templateData.blocks_blueprint = blocks_blueprint;
 
-    const tpl = `templates/admin/page/page_types/${editTemplateFolder}/edit`;
-    ControllerMixinView.setTemplate(this.state, tpl, templateData, `templates/admin/page/page_types/default/edit`);
+    ControllerMixinView.setTemplate(this.state, `templates/admin/page/page_types/${page.page_type}/edit`, templateData, `templates/admin/page/page_types/default/edit`);
   }
 
-  static getAttribute(rawKey){
-    const keyParts = rawKey.split(':');
-    return {
-      name: keyParts[0].replace('@', ''),
-      type: keyParts[1] || 'text',
-    };
-  }
-
-  static getPointer(rawKey){
-    const keyParts = rawKey.split(':');
-    return {
-      name: keyParts[0].replace('*', ''),
-      type: keyParts[1] || 'default',
-    };
-  }
-
-  static getField(rawKey){
-    const keyParts = rawKey.split(':');
-    return {
-      name: keyParts[0].split('__')[0],
-      type: keyParts[1] || 'text',
-    };
-  }
-
-  static get_blueprint_props(config_blueprint){
-    //deep copy config
-    const blueprint = JSON.parse(JSON.stringify(config_blueprint))
-
-    const attributes = [];
-    const fields = [];
-    const items = [];
-    const pointers = [];
-
-    blueprint.forEach(it => {
-      if(typeof it === 'object'){
-        Object.keys(it).forEach(key => {
-          const rawAttributes = it[key].filter(it => /^@/.test(it));
-          const rawFields = it[key].filter(it => /^[^@]/.test(it));
-          const rawPointers = it[key].filter(it => /^[^\*]/.test(it));
-          const attributes = rawAttributes.map(it => this.getAttribute(it));
-          const fields = rawFields.map(it => this.getField(it));
-
-          items.push({
-            name: key,
-            attributes: attributes,
-            fields: fields,
-            pointers: rawPointers,
-          });
-        });
-      }else if(/^@/.test(it)){
-        attributes.push(this.getAttribute(it));
-      }else if(/^\*/.test(it)){
-        pointers.push(this.getPointer(it));
-      }else{
-        fields.push(this.getField(it));
-      }
-    });
-
-    return{
-      attributes,
-      fields,
-      items,
-      pointers
-    }
-  }
 
   async action_create(){
     const page = this.state.get('instance');
     this.setEditTemplate(page, false, {}, {});
+  }
+
+  static traverse(obj, parentKey = '', callback=()=>{}) {
+    if (typeof obj !== 'object' || obj === null) return;
+
+    Object.keys(obj).forEach(key => {
+      if (key.startsWith('*')) {
+//        result.push({ key, parentKey });
+      }
+      this.traverse(obj[key], key);
+    });
+  }
+
+  static hasPointer(obj){
+    if (typeof obj !== 'object' || obj === null) return false;
+
+    for (const key in obj) {
+      if (key.startsWith('*')) {
+        return true;
+      }
+      if (this.hasPointer(obj[key])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static async resolvePointer(state, print){
+    //check blueprint contains page linker
+    const pageLists = new Map();
+    const matches = this.hasPointer(print.tokens);
+    if(!matches)return;
+
+
+    //            const result = await ORM.readBy(Page, 'page_type', [key], {database: liveDatabase, asArray:true, limit: 10000, columns:['id', 'name', 'slug', 'weight']});
+
   }
 
   async action_edit() {
@@ -490,38 +461,22 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const livePage = await ORM.readBy(Page, 'id', [page.id], {database: liveDatabase, limit:1, asArray:false});
 
     const original = HelperPageText.getOriginal(page);
-    const defaultOriginal = HelperPageText.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage);
-
-    const blueprint = Central.config.cms.blueprint[page.page_type] || Central.config.cms.blueprint.default;
-
-    //check blueprint contains page linker
-    const pageLists = [];
-    const matches = JSON.stringify(blueprint).match(/page_[^'"]+/gi);
-    if(matches){
-      const blueprintPageLinkers = [...(new Set(matches)).values()];
-      await Promise.all(
-        blueprintPageLinkers.map(async it => {
-          const key = it.replace('page_', '');
-          const result = await ORM.readBy(Page, 'page_type', [key], {database: liveDatabase, asArray:true, limit: 10000, columns:['id', 'name', 'slug', 'weight']});
-          pageLists.push({
-            type:key,
-            list: result.map(it => ({id:it.id, name:it.name, slug:it.slug, weight:it.weight})).sort((a,b) => b.weight - a.weight)
-          });
-        })
-      );
-    }
+    const defaultOriginal = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage);
 
     page.print = HelperPageText.originalToPrint(HelperPageText.mergeOriginals(defaultOriginal, original), language, null);
+
+    await ControllerAdminPage.resolvePointer(this.state, page.print);
+
 
     const placeholders = HelperPageText.originalToPrint(original, language, Central.config.cms.defaultLanguage);
 
     /** parse tags across database **/
     await page.eagerLoad({ with:['PageTag'] }, {database});
     await Promise.all(
-      page.page_tags.map(async page_tag => {
-        page_tag.tag = await ORM.factory(Tag, page_tag.tag_id, {database: tagDatabase});
-        await page_tag.tag.eagerLoad({with:['TagType']}, {database:tagDatabase});
-      })
+        page.page_tags.map(async page_tag => {
+          page_tag.tag = await ORM.factory(Tag, page_tag.tag_id, {database: tagDatabase});
+          await page_tag.tag.eagerLoad({with:['TagType']}, {database:tagDatabase});
+        })
     )
 
     page.tags = {};
@@ -547,11 +502,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     })
     /** end parse tag **/
 
-    const layout = this.state.get(ControllerMixinView.LAYOUT);
-    layout.data = Object.assign({scripts: [], defer_scripts:[]}, layout.data);
-    layout.data.defer_scripts.push('admin/pages/edit.mjs');
-
-    this.setEditTemplate(page, livePage, placeholders, templateTags, pageLists);
+    this.setEditTemplate(page, livePage, placeholders, templateTags);
   }
 
   async action_read(){
@@ -601,7 +552,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const blueprint = Central.config.cms.blocks[blockName];
     if(!blueprint) throw new Error(`Block ${blockName} not defined in config`);
 
-    const defaultBlock = HelperPageText.blueprint(blockName, Central.config.cms.blocks, Central.config.cms.defaultLanguage);
+    const defaultBlock = HelperPageEdit.blueprint(blockName, Central.config.cms.blocks, Central.config.cms.defaultLanguage);
     delete defaultBlock.blocks;
 
     const original = HelperPageText.getOriginal(page);
@@ -641,13 +592,13 @@ export default class ControllerAdminPage extends ControllerAdmin {
   }
 
   async item_add(page, itemName, count=1){
-    const defaultOriginal = HelperPageText.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en');
+    const defaultOriginal = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en');
     const defaultItem = defaultOriginal.items[itemName][0];
     const original = HelperPageText.getOriginal(page);
 
     if(!original.items[itemName]){
       //create first item
-      original.items[itemName] = HelperPageText.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en').items[itemName]
+      original.items[itemName] = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en').items[itemName]
     }
 
     for(let i=0; i<count; i++){

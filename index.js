@@ -8,6 +8,7 @@ import ControllerAdminTag from "./classes/controller/admin/Tag.mjs";
 import HelperPageText from "./classes/helper/PageText.mjs";
 import ModelPage from "./classes/model/Page.mjs";
 import ModelTag from "./classes/model/Tag.mjs";
+import ModelPageTag from "./classes/model/PageTag.mjs";
 import ModelTagType from "./classes/model/TagType.mjs";
 
 export {
@@ -15,6 +16,7 @@ export {
   ControllerAdminTag,
   HelperPageText,
   ModelPage,
+  ModelPageTag,
   ModelTag,
   ModelTagType,
 };

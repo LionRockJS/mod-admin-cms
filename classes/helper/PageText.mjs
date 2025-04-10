@@ -1,8 +1,12 @@
+import {Central} from '@lionrockjs/central';
+
 export default class HelperPageText{
+  static defaultOriginal(){
+    return {"attributes":{},"values":{},"pointers":{}, "items":{}};
+  }
+
   static getOriginal(page, attributes={}){
-    if(!page.original){
-      return {"attributes":{}, "values":{}, "items":{}}
-    }
+    if(!page.original)return this.defaultOriginal();
 
     const original = JSON.parse(page.original);
     Object.assign(original.attributes, attributes);
@@ -11,8 +15,9 @@ export default class HelperPageText{
   }
 
   static mergeOriginals(target, source) {
-    const result = {attributes:{}, values:{}, items:{}};
+    const result = this.defaultOriginal();
     result.attributes = {...target.attributes, ...source.attributes};
+    result.pointers = {...target.pointers, ...source.pointers};
 
     const languageSet = new Set([...Object.keys(target.values), ...Object.keys(source.values)]);
     languageSet.forEach(language =>{
@@ -32,6 +37,8 @@ export default class HelperPageText{
         result.items[itemType][i] = {attributes:{}, values:{}};
         const resultItem = result.items[itemType][i];
         resultItem.attributes = {...targetItems[i]?.attributes, ...sourceItems[i]?.attributes};
+        resultItem.pointers = {...targetItems[i]?.pointers, ...sourceItems[i]?.pointers};
+
         const itemLanguageSet = new Set([...Object.keys(targetItems[i]?.values || {}), ...Object.keys(sourceItems[i]?.values || {})]);
         itemLanguageSet.forEach(language =>{
           const targetValues = targetItems[i]?.values[language] || {};
@@ -46,40 +53,6 @@ export default class HelperPageText{
     }
 
     return result;
-  }
-
-  static definitionInstance(definitions=[]){
-    const result = {};
-    definitions.forEach(it => {result[it] = ""});
-    return result;
-  }
-
-  static blueprint(pageType, blueprints={}, defaultLanguage="en"){
-    const original = {"attributes":{},"values":{},"items":{}};
-    original.values[defaultLanguage] = {};
-
-    const blueprint = blueprints[pageType] ?? blueprints.default;
-    if(!blueprint)return original;
-
-    const attributes = blueprint.filter(it => typeof it !== 'object').filter(it => /^@/.test(it)).map(it => it.substring(1));
-    const values     = blueprint.filter(it => typeof it !== 'object').filter(it => /^[^@]/.test(it));
-    const items      = blueprint.filter(it => typeof it === 'object')
-
-    original.attributes = {_type:pageType, ...this.definitionInstance(attributes)};
-    original.values[defaultLanguage] = this.definitionInstance(values);
-
-    items.forEach(item =>{
-      const key = Object.keys(item)[0];
-      const itemAttributes = item[key].filter(it=>/^@/.test(it)).map(it => it.substring(1));
-      const itemValues     = item[key].filter(it => /^[^@]/.test(it));
-
-      const defaultItem = {"attributes":{"_weight": 0}, "values":{}};
-      Object.assign(defaultItem.attributes, this.definitionInstance(itemAttributes))
-      defaultItem.values[defaultLanguage] = this.definitionInstance(itemValues);
-      original.items[key] = [defaultItem];
-    })
-
-    return original;
   }
 
   static tokenToObject(tokens){
@@ -106,9 +79,9 @@ export default class HelperPageText{
   }
 
   static flattenTokens(original, languageCode, masterLanguage=null){
-    const result = Object.assign({}, original.attributes, (masterLanguage ? original.values[masterLanguage] : null), original.values[languageCode]);
+    const result = Object.assign({}, original.attributes, original.pointers, (masterLanguage ? original.values[masterLanguage] : null), original.values[languageCode]);
     Object.keys(original.items).forEach(key => {
-      result[key] = original.items[key].map(it => Object.assign({}, it.attributes, (masterLanguage ? it.values[masterLanguage] : null), it.values[languageCode]))
+      result[key] = original.items[key].map(it => Object.assign({}, it.attributes, it.pointers, (masterLanguage ? it.values[masterLanguage] : null), it.values[languageCode]))
     });
     //collect xxx__yyy to xxx: {yyy:""}
     this.tokenToObject(result);
@@ -147,61 +120,16 @@ export default class HelperPageText{
   static pageToPrint(page, languageCode, masterLanguageCode = 'en'){
     if(!page)return null;
     if(!page.original)return null;
+    const timezone = Central.config.cms.timezone || 'z';
 
     //check have schedule;
     if(
-      (!!page.start && Date.now() < new Date(page.start+'z').getTime()) ||
-      (!!page.end   && Date.now() > new Date(page.end+'z').getTime())
+      (!!page.start && Date.now() < new Date(page.start+timezone).getTime()) ||
+      (!!page.end   && Date.now() > new Date(page.end+timezone).getTime())
     ){
       return null;
     }
 
     return this.originalToPrint(JSON.parse(page.original), languageCode, masterLanguageCode);
-  }
-
-  static update(original, name, value, language="en"){
-    //parse attributes
-    let m = name.match(/^@(\w+)$/);
-    if(m){
-      original.attributes[m[1]] = value;
-      if(value === "")delete original.attributes[m[1]];
-    }
-
-    //parse values
-    m = name.match(/^\.(\w+)\|?([a-z-]+)?$/);
-    if(m){
-      original.values[ m[2] || language ] ||= {};
-      original.values[ m[2] || language ][ m[1] ] = value;
-
-      if(value === "")delete original.values[ m[2] || language ][ m[1] ];
-    }
-
-    //parse items
-    m = name.match(/^\.(\w+)\[(\d+)\](@(\w+)$|\.(\w+)\|?([a-z-]+)?$)/);
-    if(m){
-      original.items[ m[1] ] ||= [];
-      original.items[ m[1] ][ parseInt(m[2]) ] ||= {attributes:{}, values:{}}
-      if(m[4]){
-        original.items[ m[1] ][ parseInt(m[2]) ].attributes[ m[4] ] = value;
-        if(value === "")delete original.items[ m[1] ][ parseInt(m[2]) ].attributes[ m[4] ];
-      }
-      if(m[5]){
-        original.items[ m[1] ][ parseInt(m[2]) ].values[ m[6] || language ] ||= {};
-        original.items[ m[1] ][ parseInt(m[2]) ].values[ m[6] || language ][ m[5] ] = value;
-        if(value === "")delete original.items[ m[1] ][ parseInt(m[2]) ].values[ m[6] || language ][ m[5] ]
-      }
-    }
-
-    //parse blocks
-    m = name.match(/^#(\d+)([.@][\w+\[\].@|-]+)$/);
-    if(m){
-      original.blocks ||= [];
-      original.blocks[ parseInt( m[1]) ] ||= {attributes:{}, values:{}, items:{}}
-
-      const block = original.blocks[ parseInt(m[1]) ]
-      this.update(block, m[2], value, language);
-    }
-
-    return original;
   }
 }
