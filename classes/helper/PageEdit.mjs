@@ -9,6 +9,16 @@ export default class HelperPageEdit{
         };
     }
 
+    static getPointerProps(rawKey){
+        const keyParts = rawKey.split(':');
+        //if keyParts[0] matches @ or ., default type to 'page/field', else page/basic
+
+        return {
+            name: keyParts[0].replace("*",'').split('__')[0],
+            type: keyParts[1] || ((/[.@]/.test(keyParts[0])) ? 'text': 'page/basic'),
+        };
+    }
+
     static get_blueprint_props(config_blueprint){
         //deep copy config
         const blueprint = JSON.parse(JSON.stringify(config_blueprint))
@@ -24,8 +34,9 @@ export default class HelperPageEdit{
                     const rawAttributes = it[key].filter(it => /^@/.test(it));
                     const rawPointers = it[key].filter(it => /^\*/.test(it));
                     const rawFields = it[key].filter(it => /^[^@*]/.test(it));
+
                     const attributes = rawAttributes.map(it => this.getProps(it, '@'));
-                    const pointers = rawPointers.map(it => this.getProps(it, '*'));
+                    const pointers = rawPointers.map(it => this.getPointerProps(it));
                     const fields = rawFields.map(it => this.getProps(it));
 
                     items.push({
@@ -38,7 +49,7 @@ export default class HelperPageEdit{
             }else if(/^@/.test(it)){
                 attributes.push(this.getProps(it, '@'));
             }else if(/^\*/.test(it)){
-                pointers.push(this.getProps(it, '*'));
+                pointers.push(this.getPointerProps(it));
             }else{
                 fields.push(this.getProps(it));
             }

@@ -430,14 +430,57 @@ export default class ControllerAdminPage extends ControllerAdmin {
     return false;
   }
 
-  static async resolvePointer(state, print){
-    //check blueprint contains page linker
-    const pageLists = new Map();
-    const matches = this.hasPointer(print.tokens);
-    if(!matches)return;
+  static async resolvePointer(state, original){
+    const database = state.get(ControllerMixinDatabase.DATABASES).get('draft');
+    const prints = new Map();
 
+    for(let key in original.pointers){
+      const pageId = original.pointers[key];
+      if(!pageId) continue;
+      let print = prints.get(pageId);
+      if(!print){
+        const page = await ORM.factory(Page, pageId, {database, asArray:false});
+        const original = HelperPageText.getOriginal(page);
+        original.items = {};
+        original.blocks = [];
 
-    //            const result = await ORM.readBy(Page, 'page_type', [key], {database: liveDatabase, asArray:true, limit: 10000, columns:['id', 'name', 'slug', 'weight']});
+        print = HelperPageText.originalToPrint(original, state.get(Controller.STATE_LANGUAGE), Central.config.cms.defaultLanguage);
+        print.tokens.id = page.id;
+        prints.set(pageId, print);
+      }
+      original.pointers[key] = print.tokens;
+    }
+
+    //loop items
+
+    for(let itemKey in original.items){
+      const items = original.items[itemKey];
+      for(const item of items){
+        if(!item.pointers )continue;
+
+        for(let key in item.pointers){
+          const pageId = item.pointers[key];
+          if(!pageId) continue;
+          let print = prints.get(pageId);
+          if(!print){
+            const page = await ORM.factory(Page, pageId, {database, asArray:false});
+            const original = HelperPageText.getOriginal(page);
+            original.items = {};
+            original.blocks = [];
+
+            print = HelperPageText.originalToPrint(original, state.get(Controller.STATE_LANGUAGE), Central.config.cms.defaultLanguage);
+            print.tokens.id = page.id;
+            prints.set(pageId, print);
+          }
+          item.pointers[key] = print.tokens;
+        }
+      }
+    }
+
+    //loop blocks
+    for(let block in original.blocks){
+      await this.resolvePointer(state, block);
+    }
 
   }
 
@@ -453,9 +496,11 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const original = HelperPageText.getOriginal(page);
     const defaultOriginal = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage);
 
+    //resolve pointer with print
+    await ControllerAdminPage.resolvePointer(this.state, original);
+
     page.print = HelperPageText.originalToPrint(HelperPageText.mergeOriginals(defaultOriginal, original), language, null);
 
-    await ControllerAdminPage.resolvePointer(this.state, page.print);
 
 
     const placeholders = HelperPageText.originalToPrint(original, language, Central.config.cms.defaultLanguage);
