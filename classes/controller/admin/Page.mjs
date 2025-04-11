@@ -175,8 +175,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
     const original = HelperPageText.getOriginal(instance);
 
-    console.log(postOriginal, original);
-
     //collect tags and write to original
     await instance.eagerLoad({with:['PageTag']}, {database});
     const databaseTag = this.state.get(ControllerMixinDatabase.DATABASES).get('tag');
@@ -388,8 +386,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
     templateData.original     = page.original;
     templateData.live_original= livePage?.original || {};
 
-    console.log(page.original);
-
     const blueprint = Central.config.cms.blueprint[page.page_type] || Central.config.cms.blueprint.default;
     templateData.blueprint_props = HelperPageEdit.get_blueprint_props(blueprint);
 
@@ -456,7 +452,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     const original = HelperPageText.getOriginal(page);
     const defaultOriginal = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage);
-    console.log(original, defaultOriginal);
 
     page.print = HelperPageText.originalToPrint(HelperPageText.mergeOriginals(defaultOriginal, original), language, null);
 

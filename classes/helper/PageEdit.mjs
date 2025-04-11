@@ -95,12 +95,10 @@ export default class HelperPageEdit{
     static postToOriginal($_POST, langauge="en"){
         const original = HelperPageText.defaultOriginal();
         original.values[langauge] = {};
-        original.blocks = [];
 
         Object.keys($_POST).forEach(name => {
             //parse attributes
             const value = $_POST[name];
-//            if(value === "")return;
 
             let m = name.match(/^@(\w+)$/);
             if(m){
@@ -150,69 +148,21 @@ export default class HelperPageEdit{
             }
 
             //parse blocks
+            m = name.match(/^#(\d+)([.@*][\w+\[\].@*|-]+)$/);
+            if(m){
+                const post = {};
+                post[m[2]] = value;
 
+                original.blocks ||= [];
+                original.blocks[ parseInt( m[1]) ] ||= HelperPageText.defaultOriginal();
+
+                const block = original.blocks[ parseInt( m[1]) ];
+                original.blocks[ parseInt( m[1]) ] = HelperPageText.mergeOriginals(
+                    block,
+                    this.postToOriginal(post, langauge)
+                );
+            }
         });
-
-        return original;
-    }
-
-    static update(original, name, value, language="en"){
-        //parse attributes
-        let m = name.match(/^@(\w+)$/);
-        if(m){
-            original.attributes[m[1]] = value;
-            if(value === "")delete original.attributes[m[1]];
-        }
-
-        //parse pointers
-        m = name.match(/^\*(\w+)$/)
-        if(m){
-            const key = '*'+m[1];
-            original.pointers[key] = value;
-            if(value === "")delete original.pointers[key];
-        }
-
-        //parse values
-        m = name.match(/^\.(\w+)\|?([a-z-]+)?$/);
-        if(m){
-            original.values[ m[2] || language ] ||= {};
-            original.values[ m[2] || language ][ m[1] ] = value;
-
-            if(value === "")delete original.values[ m[2] || language ][ m[1] ];
-        }
-
-        //parse items
-        m = name.match(/^\.(\w+)\[(\d+)\]([@*](\w+)$|\.(\w+)\|?([a-z-]+)?$|\*(\w+)$)/);
-        if(m){
-            original.items[ m[1] ] ||= [];
-            original.items[ m[1] ][ parseInt(m[2]) ] ||= HelperPageText.defaultOriginalItem()
-            const item = original.items[ m[1] ][ parseInt(m[2]) ];
-            if(m[4]){
-                item.attributes[ m[4] ] = value;
-                if(value === "")delete item.attributes[ m[4] ];
-            }
-
-            if(m[7]){
-                item.pointers[ m[7] ] = value;
-                if(value === "")delete item.pointers[ m[7] ];
-            }
-
-            if(m[5]){
-                item.values[ m[6] || language ] ||= {};
-                item.values[ m[6] || language ][ m[5] ] = value;
-                if(value === "")delete item.values[ m[6] || language ][ m[5] ]
-            }
-        }
-
-        //parse blocks
-        m = name.match(/^#(\d+)([.@*][\w+\[\].@*|-]+)$/);
-        if(m){
-            original.blocks ||= [];
-            original.blocks[ parseInt( m[1]) ] ||= HelperPageText.defaultOriginal();
-
-            const block = original.blocks[ parseInt(m[1]) ]
-            this.update(block, m[2], value, language);
-        }
 
         return original;
     }

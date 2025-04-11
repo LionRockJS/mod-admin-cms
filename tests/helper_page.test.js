@@ -165,97 +165,24 @@ describe('page helper test', () => {
                 }
               }
             ]
-          }
+          },
+          blocks:[
+            {
+              attributes:{
+                _type: "paragraph",
+                city:"block city",
+              },
+              pointers:{},
+              values:{
+                en:{}
+              },
+              items:{}
+            }
+          ]
         })
     )
 
   });
-
-  test('inputs to original', ()=>{
-    const input = {
-      "@_type": "pages",
-      "@city":"city",
-      ".name":"foo",
-      ".name|zh-hant":"髮",
-      ".body":"bar",
-      ".link__label":"click me",
-      ".link__url":"https://www.example.com",
-      ".todo[0]@price":"160",
-      ".todo[0].body":"tar",
-      ".todo[0].link__label":"details",
-      ".todo[0].link__url":"https://www.example.com/details",
-      ".todo[1]@price":"160",
-      ".todo[1].body":"sha",
-      "#0@_type":"paragraph",
-      "#0@city":"block city",
-    }
-
-    let original = HelperPageEdit.blueprint('pages', blueprint);
-    HelperPageEdit.update(original, "@_type", "news", "en");
-    expect(original.attributes._type).toBe('news');
-
-    HelperPageEdit.update(original, "@city", "Hong Kong", "en");
-    expect(original.attributes.city).toBe('Hong Kong');
-
-    HelperPageEdit.update(original, "@city", "香港", "zh-hant");
-    expect(original.attributes.city).toBe('香港');
-
-    HelperPageEdit.update(original, ".name", "foo", "en");
-    expect(original.values.en.name).toBe('foo');
-
-    HelperPageEdit.update(original, ".name|zh-hant", "髮", "en");
-    expect(original.values.en.name).toBe('foo');
-    expect(original.values["zh-hant"].name).toBe('髮');
-
-    HelperPageEdit.update(original, ".link__label", "click me", "en");
-    expect(original.values.en.link__label).toBe('click me');
-
-    HelperPageEdit.update(original, ".todo[0]@price", "160");
-    expect(original.items.todo[0].attributes.price).toBe("160");
-
-    HelperPageEdit.update(original, ".todo[0].body", "tar");
-    expect(original.items.todo[0].values.en.body).toBe("tar");
-
-    HelperPageEdit.update(original, ".todo[0].body|zh-hant", "試");
-    expect(original.items.todo[0].values['zh-hant'].body).toBe("試");
-
-    HelperPageEdit.update(original, ".todo[1].body", "sha");
-    expect(original.items.todo[1].values.en.body).toBe("sha");
-
-    expect(JSON.stringify(original)).toBe(
-      JSON.stringify({
-        attributes:{
-          _type: "news",
-          city: "香港"
-        },
-        pointers:{},
-        values:{
-          en:{name: "foo", body: "", link__label : "click me", link__url : ""},
-          "zh-hant":{name:"髮"}
-        },
-        items:{
-          todo:[
-            {
-              attributes:{_weight: 0, price:"160"},
-              pointers:{},
-              values:{
-                en:{body:"tar", link__label: "", link__url: ""},
-                'zh-hant':{body:"試"}}
-            },
-            {
-              attributes:{},
-              pointers:{},
-              values:{
-                en:{body:"sha"},
-              }
-            }
-          ]
-        }
-      })
-    )
-
-
-  })
 
   test('inputs to blocks', ()=>{
     const input = {
@@ -276,35 +203,33 @@ describe('page helper test', () => {
       "#0@city":"block city",
     }
 
-    const print = HelperPageEdit.blueprint('pages', blueprint);
-    HelperPageEdit.update(print, "#0@_type", "paragraph", 'en');
-    expect(print.blocks[0].attributes._type).toBe('paragraph');
-
-    HelperPageEdit.update(print, "#0@city", "block city", 'en');
-    expect(print.blocks[0].attributes.city).toBe('block city');
-
-    HelperPageEdit.update(print, "#1.name|zh-hant", "髮髮", 'en');
-    expect(print.blocks[1].values['zh-hant'].name).toBe('髮髮');
-
-    HelperPageEdit.update(print, "#1.name", "hello", 'en');
-    expect(print.blocks[1].values.en.name).toBe('hello');
+    const print = HelperPageText.mergeOriginals(
+      HelperPageEdit.blueprint('pages', blueprint),
+      HelperPageEdit.postToOriginal(input, "en")
+    );
 
     expect(JSON.stringify(print)).toBe(
       JSON.stringify({
         attributes:{
           _type: "pages",
-          city: ""
+          city: "city"
         },
         pointers:{},
         values:{
-          en:{name: "", body: "", link__label : "", link__url : ""}
+          en:{name: "foo", body: "bar", link__label : "click me", link__url : "https://www.example.com"},
+          "zh-hant":{name:"髮"},
         },
         items:{
           todo:[
             {
-              attributes:{ _weight: 0, price:""},
+              attributes:{ _weight: 0, price:"160"},
               pointers:{},
-              values:{en:{body:"", link__label: "", link__url: ""}}
+              values:{en:{body:"tar", link__label: "details", link__url: "https://www.example.com/details"}}
+            },
+            {
+              attributes:{ price:"160"},
+              pointers:{},
+              values:{en:{body:"sha"}}
             }
           ]
         },
@@ -312,19 +237,8 @@ describe('page helper test', () => {
           {
             attributes:{_type: "paragraph", city:"block city"},
             pointers:{},
-            values: {},
-            items: {}
-          },
-          {
-            attributes:{},
-            pointers:{},
             values: {
-              'zh-hant':{
-                name:"髮髮"
-              },
-              en:{
-                name:"hello"
-              },
+              en:{}
             },
             items: {}
           }
@@ -334,18 +248,33 @@ describe('page helper test', () => {
   })
 
   test('merge originals', () =>{
-    const originalPage = HelperPageEdit.blueprint('pages', blueprint);
-    const originalPoster = HelperPageEdit.blueprint('poster', blueprint);
+    const post1 = {
+      ".name": "Megahit",
+      ".body": "Lorem lipsum",
+    }
 
-    HelperPageEdit.update(originalPage, '.name', 'Megahit');
-    HelperPageEdit.update(originalPage, '.body', 'Lorem lipsum');
-    HelperPageEdit.update(originalPoster, '@location', 'city_hall');
-    HelperPageEdit.update(originalPoster, '.range[0]@price', '100');
-    HelperPageEdit.update(originalPoster, '.range[1]@price', '200');
-    HelperPageEdit.update(originalPoster, '.range[2]@price', '500');
-    HelperPageEdit.update(originalPoster, '.range[0].name', 'entry class');
+    const post2 = {
+      "@location": "city_hall",
+      ".range[0]@price": "100",
+      ".range[1]@price": "200",
+      ".range[2]@price": "500",
+      ".range[0].name": "entry class",
+    }
+
+
+    const originalPage = HelperPageText.mergeOriginals(
+        HelperPageEdit.blueprint('pages', blueprint),
+        HelperPageEdit.postToOriginal(post1, "en")
+    );
+
+    const originalPoster = HelperPageText.mergeOriginals(
+        HelperPageEdit.blueprint('poster', blueprint),
+        HelperPageEdit.postToOriginal(post2, "en")
+    )
+
 
     const original = HelperPageText.mergeOriginals(originalPage, originalPoster);
+
     expect(JSON.stringify(original)).toBe(JSON.stringify({
       attributes:{
         _type: "poster",
