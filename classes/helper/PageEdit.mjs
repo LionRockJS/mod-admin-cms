@@ -80,7 +80,9 @@ export default class HelperPageEdit{
             const itemPointers   = item[key].filter(it=>/^\*/.test(it)).map(it => it.substring(1));
             const itemValues     = item[key].filter(it => /^[^@*]/.test(it));
 
-            const defaultItem = {"attributes":{"_weight": 0}, "values":{}, "pointers":{}};
+            const defaultItem = HelperPageText.defaultOriginalItem();
+            defaultItem.attributes._weight = 0;
+
             Object.assign(defaultItem.attributes, this.definitionInstance(itemAttributes));
             Object.assign(defaultItem.pointers, this.definitionInstance(itemPointers));
             defaultItem.values[defaultLanguage] = this.definitionInstance(itemValues);
@@ -91,15 +93,16 @@ export default class HelperPageEdit{
     }
 
     static postToOriginal($_POST, langauge="en"){
-        const original = this.defaultOriginal();
+        const original = HelperPageText.defaultOriginal();
         original.values[langauge] = {};
+        original.blocks = [];
 
         Object.keys($_POST).forEach(name => {
             //parse attributes
+            const value = $_POST[name];
+//            if(value === "")return;
 
             let m = name.match(/^@(\w+)$/);
-            const value = $_POST[name];
-            if(value === "")return;
             if(m){
                 original.attributes[m[1]] = value;
                 return;
@@ -108,7 +111,7 @@ export default class HelperPageEdit{
             //parse pointers
             m = name.match(/^\*(\w+)$/)
             if(m){
-                const key = '*'+m[1];
+                const key = m[1];
                 original.pointers[key] = value;
                 return;
             }
@@ -125,7 +128,7 @@ export default class HelperPageEdit{
             m = name.match(/^\.(\w+)\[(\d+)\](@(\w+)$|\.(\w+)\|?([a-z-]+)?$|\*(\w+)$)/);
             if(m){
                 original.items[ m[1] ] ||= [];
-                original.items[ m[1] ][ parseInt(m[2]) ] ||= {attributes:{}, values:{}, pointers:{}};
+                original.items[ m[1] ][ parseInt(m[2]) ] ||= HelperPageText.defaultOriginalItem();
 
                 const item = original.items[ m[1] ][ parseInt(m[2]) ];
 
@@ -165,8 +168,8 @@ export default class HelperPageEdit{
         m = name.match(/^\*(\w+)$/)
         if(m){
             const key = '*'+m[1];
-            original.attributes[key] = value;
-            if(value === "")delete original.attributes[key];
+            original.pointers[key] = value;
+            if(value === "")delete original.pointers[key];
         }
 
         //parse values
@@ -182,7 +185,7 @@ export default class HelperPageEdit{
         m = name.match(/^\.(\w+)\[(\d+)\]([@*](\w+)$|\.(\w+)\|?([a-z-]+)?$|\*(\w+)$)/);
         if(m){
             original.items[ m[1] ] ||= [];
-            original.items[ m[1] ][ parseInt(m[2]) ] ||= {attributes:{}, values:{}}
+            original.items[ m[1] ][ parseInt(m[2]) ] ||= HelperPageText.defaultOriginalItem()
             const item = original.items[ m[1] ][ parseInt(m[2]) ];
             if(m[4]){
                 item.attributes[ m[4] ] = value;
@@ -205,7 +208,7 @@ export default class HelperPageEdit{
         m = name.match(/^#(\d+)([.@*][\w+\[\].@*|-]+)$/);
         if(m){
             original.blocks ||= [];
-            original.blocks[ parseInt( m[1]) ] ||= {attributes:{}, pointers:{}, values:{}, items:{}}
+            original.blocks[ parseInt( m[1]) ] ||= HelperPageText.defaultOriginal();
 
             const block = original.blocks[ parseInt(m[1]) ]
             this.update(block, m[2], value, language);

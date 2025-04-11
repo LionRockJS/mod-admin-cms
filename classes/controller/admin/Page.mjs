@@ -172,19 +172,13 @@ export default class ControllerAdminPage extends ControllerAdmin {
       instance.slug = slugExist ? (slug + instance.id) : slug;
     }
 
-//    const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
-    console.log($_POST);
-//    console.log(JSON.stringify(postOriginal, null, 2));
-
+    const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
     const original = HelperPageText.getOriginal(instance);
-    //update original
-    Object.keys($_POST).forEach(name => {
-      HelperPageEdit.update(original, name, $_POST[name], this.state.get(Controller.STATE_LANGUAGE))
-    });
+
+    console.log(postOriginal, original);
 
     //collect tags and write to original
     await instance.eagerLoad({with:['PageTag']}, {database});
-
     const databaseTag = this.state.get(ControllerMixinDatabase.DATABASES).get('tag');
     const tagTypes = await ORM.readAll(TagType, {database:databaseTag, asArray:true});
     const tagTypeMap = new Map(tagTypes.map(it => [it.id, it.name]));
@@ -192,7 +186,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     original.tags = tags.map(tag => HelperPageText.getOriginal(tag, {_id: tag.id, _type_id: tag.tag_type_id, _type:tagTypeMap.get(tag.tag_type_id)}));
 
-    instance.original = JSON.stringify(original);
+    instance.original = JSON.stringify(HelperPageText.mergeOriginals(original, postOriginal));
     await instance.write();
 
     const dbAttribute = this.state.get(ControllerMixinDatabase.DATABASES).get('draft_attribute');
@@ -462,6 +456,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     const original = HelperPageText.getOriginal(page);
     const defaultOriginal = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage);
+    console.log(original, defaultOriginal);
 
     page.print = HelperPageText.originalToPrint(HelperPageText.mergeOriginals(defaultOriginal, original), language, null);
 

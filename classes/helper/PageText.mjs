@@ -2,7 +2,11 @@ import {Central} from '@lionrockjs/central';
 
 export default class HelperPageText{
   static defaultOriginal(){
-    return {"attributes":{},"values":{},"pointers":{}, "items":{}};
+    return {...this.defaultOriginalItem(),"items":{}};
+  }
+
+  static defaultOriginalItem(){
+    return {"attributes":{},"pointers":{},"values":{}}
   }
 
   static getOriginal(page, attributes={}){
@@ -34,7 +38,7 @@ export default class HelperPageText{
 
       const length = Math.max(targetItems.length, sourceItems.length);
       for( let i=0; i<length; i++){
-        result.items[itemType][i] = {attributes:{}, values:{}};
+        result.items[itemType][i] = {attributes:{}, pointers:{}, values:{}};
         const resultItem = result.items[itemType][i];
         resultItem.attributes = {...targetItems[i]?.attributes, ...sourceItems[i]?.attributes};
         resultItem.pointers = {...targetItems[i]?.pointers, ...sourceItems[i]?.pointers};
@@ -49,7 +53,7 @@ export default class HelperPageText{
     });
 
     if(target.blocks || source.blocks){
-      result.blocks = [].concat((target.blocks || []), source.blocks);
+      result.blocks = [].concat((target.blocks || []), source.blocks).filter(it => !!it);
     }
 
     return result;
@@ -57,6 +61,7 @@ export default class HelperPageText{
 
   static tokenToObject(tokens){
     Object.keys(tokens).forEach(token => {
+      //array is items
       if(Array.isArray(tokens[token])){
         const items = tokens[token];
         items.forEach(it => this.tokenToObject(it));
@@ -105,7 +110,7 @@ export default class HelperPageText{
 
     if(!original.blocks)return result;
 
-    result.blocks = original.blocks.map(block => ({
+    result.blocks = original.blocks.filter(block => !!block).map(block => ({
       tokens:this.flattenTokens(block, languageCode, masterLanguageCode)
     }))
 

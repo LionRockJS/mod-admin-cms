@@ -1,4 +1,5 @@
 import HelperPageText from "../classes/helper/PageText.mjs";
+import HelperPageEdit from "../classes/helper/PageEdit.mjs";
 
 const blueprint = {
   pages: [
@@ -13,11 +14,13 @@ const blueprint = {
 
 describe('page helper test', () => {
   test('get blueprint original', async()=>{
-    expect(JSON.stringify(HelperPageText.blueprint('pages', blueprint)))
+    expect(JSON.stringify(HelperPageEdit.blueprint('pages', blueprint)))
       .toBe(JSON.stringify({
         attributes:{
           _type: "pages",
           city: ""
+        },
+        pointers:{
         },
         values:{
           en:{name: "", body: "", link__label : "", link__url : ""}
@@ -26,6 +29,7 @@ describe('page helper test', () => {
           todo:[
             {
               attributes:{_weight: 0, price:""},
+              pointers:{},
               values:{en:{body:"", link__label: "", link__url: ""}}
             }
           ]
@@ -105,6 +109,68 @@ describe('page helper test', () => {
     expect("#1.name|zh-hant".match(reBlock)[2]).toBe(".name|zh-hant");
   })
 
+  test('post to original', ()=>{
+    const input = {
+      "@_type": "pages",
+      "@city":"city",
+      "*parent":"111222",
+      ".name":"foo",
+      ".name|zh-hant":"髮",
+      ".name|zh-hans":"",
+      ".body":"bar",
+      ".link__label":"click me",
+      ".link__url":"https://www.example.com",
+      ".todo[0]@price":"160",
+      ".todo[0]*remote":"123456",
+      ".todo[0].body":"tar",
+      ".todo[0].link__label":"details",
+      ".todo[0].link__url":"https://www.example.com/details",
+      ".todo[1]@price":"160",
+      ".todo[1].body":"sha",
+      "#0@_type":"paragraph",
+      "#0@city":"block city",
+    }
+
+    let original = HelperPageEdit.postToOriginal(input, "en");
+    expect(JSON.stringify(original)).toBe(
+        JSON.stringify({
+          attributes:{
+            _type: "pages",
+            city: "city"
+          },
+          pointers:{
+            parent:"111222"
+          },
+          values:{
+            en:{name: "foo", body: "bar", link__label : "click me", link__url : "https://www.example.com"},
+            "zh-hant":{name:"髮"},
+            "zh-hans":{name:""}
+          },
+          items:{
+            todo:[
+              {
+                attributes:{price:"160"},
+                pointers:{
+                    remote:"123456"
+                },
+                values:{
+                  en:{body:"tar", link__label: "details", link__url: "https://www.example.com/details"},
+                }
+              },
+              {
+                attributes:{price:"160"},
+                pointers:{},
+                values:{
+                  en:{body:"sha"},
+                }
+              }
+            ]
+          }
+        })
+    )
+
+  });
+
   test('inputs to original', ()=>{
     const input = {
       "@_type": "pages",
@@ -124,36 +190,36 @@ describe('page helper test', () => {
       "#0@city":"block city",
     }
 
-    let original = HelperPageText.blueprint('pages', blueprint);
-    HelperPageText.update(original, "@_type", "news", "en");
+    let original = HelperPageEdit.blueprint('pages', blueprint);
+    HelperPageEdit.update(original, "@_type", "news", "en");
     expect(original.attributes._type).toBe('news');
 
-    HelperPageText.update(original, "@city", "Hong Kong", "en");
+    HelperPageEdit.update(original, "@city", "Hong Kong", "en");
     expect(original.attributes.city).toBe('Hong Kong');
 
-    HelperPageText.update(original, "@city", "香港", "zh-hant");
+    HelperPageEdit.update(original, "@city", "香港", "zh-hant");
     expect(original.attributes.city).toBe('香港');
 
-    HelperPageText.update(original, ".name", "foo", "en");
+    HelperPageEdit.update(original, ".name", "foo", "en");
     expect(original.values.en.name).toBe('foo');
 
-    HelperPageText.update(original, ".name|zh-hant", "髮", "en");
+    HelperPageEdit.update(original, ".name|zh-hant", "髮", "en");
     expect(original.values.en.name).toBe('foo');
     expect(original.values["zh-hant"].name).toBe('髮');
 
-    HelperPageText.update(original, ".link__label", "click me", "en");
+    HelperPageEdit.update(original, ".link__label", "click me", "en");
     expect(original.values.en.link__label).toBe('click me');
 
-    HelperPageText.update(original, ".todo[0]@price", "160");
+    HelperPageEdit.update(original, ".todo[0]@price", "160");
     expect(original.items.todo[0].attributes.price).toBe("160");
 
-    HelperPageText.update(original, ".todo[0].body", "tar");
+    HelperPageEdit.update(original, ".todo[0].body", "tar");
     expect(original.items.todo[0].values.en.body).toBe("tar");
 
-    HelperPageText.update(original, ".todo[0].body|zh-hant", "試");
+    HelperPageEdit.update(original, ".todo[0].body|zh-hant", "試");
     expect(original.items.todo[0].values['zh-hant'].body).toBe("試");
 
-    HelperPageText.update(original, ".todo[1].body", "sha");
+    HelperPageEdit.update(original, ".todo[1].body", "sha");
     expect(original.items.todo[1].values.en.body).toBe("sha");
 
     expect(JSON.stringify(original)).toBe(
@@ -162,6 +228,7 @@ describe('page helper test', () => {
           _type: "news",
           city: "香港"
         },
+        pointers:{},
         values:{
           en:{name: "foo", body: "", link__label : "click me", link__url : ""},
           "zh-hant":{name:"髮"}
@@ -170,12 +237,14 @@ describe('page helper test', () => {
           todo:[
             {
               attributes:{_weight: 0, price:"160"},
+              pointers:{},
               values:{
                 en:{body:"tar", link__label: "", link__url: ""},
                 'zh-hant':{body:"試"}}
             },
             {
               attributes:{},
+              pointers:{},
               values:{
                 en:{body:"sha"},
               }
@@ -207,17 +276,17 @@ describe('page helper test', () => {
       "#0@city":"block city",
     }
 
-    const print = HelperPageText.blueprint('pages', blueprint);
-    HelperPageText.update(print, "#0@_type", "paragraph", 'en');
+    const print = HelperPageEdit.blueprint('pages', blueprint);
+    HelperPageEdit.update(print, "#0@_type", "paragraph", 'en');
     expect(print.blocks[0].attributes._type).toBe('paragraph');
 
-    HelperPageText.update(print, "#0@city", "block city", 'en');
+    HelperPageEdit.update(print, "#0@city", "block city", 'en');
     expect(print.blocks[0].attributes.city).toBe('block city');
 
-    HelperPageText.update(print, "#1.name|zh-hant", "髮髮", 'en');
+    HelperPageEdit.update(print, "#1.name|zh-hant", "髮髮", 'en');
     expect(print.blocks[1].values['zh-hant'].name).toBe('髮髮');
 
-    HelperPageText.update(print, "#1.name", "hello", 'en');
+    HelperPageEdit.update(print, "#1.name", "hello", 'en');
     expect(print.blocks[1].values.en.name).toBe('hello');
 
     expect(JSON.stringify(print)).toBe(
@@ -226,6 +295,7 @@ describe('page helper test', () => {
           _type: "pages",
           city: ""
         },
+        pointers:{},
         values:{
           en:{name: "", body: "", link__label : "", link__url : ""}
         },
@@ -233,6 +303,7 @@ describe('page helper test', () => {
           todo:[
             {
               attributes:{ _weight: 0, price:""},
+              pointers:{},
               values:{en:{body:"", link__label: "", link__url: ""}}
             }
           ]
@@ -240,11 +311,13 @@ describe('page helper test', () => {
         blocks:[
           {
             attributes:{_type: "paragraph", city:"block city"},
+            pointers:{},
             values: {},
             items: {}
           },
           {
             attributes:{},
+            pointers:{},
             values: {
               'zh-hant':{
                 name:"髮髮"
@@ -261,15 +334,16 @@ describe('page helper test', () => {
   })
 
   test('merge originals', () =>{
-    const originalPage = HelperPageText.blueprint('pages', blueprint);
-    const originalPoster = HelperPageText.blueprint('poster', blueprint);
-    HelperPageText.update(originalPage, '.name', 'Megahit');
-    HelperPageText.update(originalPage, '.body', 'Lorem lipsum');
-    HelperPageText.update(originalPoster, '@location', 'city_hall');
-    HelperPageText.update(originalPoster, '.range[0]@price', '100');
-    HelperPageText.update(originalPoster, '.range[1]@price', '200');
-    HelperPageText.update(originalPoster, '.range[2]@price', '500');
-    HelperPageText.update(originalPoster, '.range[0].name', 'entry class');
+    const originalPage = HelperPageEdit.blueprint('pages', blueprint);
+    const originalPoster = HelperPageEdit.blueprint('poster', blueprint);
+
+    HelperPageEdit.update(originalPage, '.name', 'Megahit');
+    HelperPageEdit.update(originalPage, '.body', 'Lorem lipsum');
+    HelperPageEdit.update(originalPoster, '@location', 'city_hall');
+    HelperPageEdit.update(originalPoster, '.range[0]@price', '100');
+    HelperPageEdit.update(originalPoster, '.range[1]@price', '200');
+    HelperPageEdit.update(originalPoster, '.range[2]@price', '500');
+    HelperPageEdit.update(originalPoster, '.range[0].name', 'entry class');
 
     const original = HelperPageText.mergeOriginals(originalPage, originalPoster);
     expect(JSON.stringify(original)).toBe(JSON.stringify({
@@ -278,6 +352,7 @@ describe('page helper test', () => {
         city: "",
         location:"city_hall"
       },
+      pointers:{},
       values:{
         en:{name: "Megahit", body: "Lorem lipsum", link__label : "", link__url : "", slogan:""}
       },
@@ -285,20 +360,24 @@ describe('page helper test', () => {
         todo:[
           {
             attributes:{ _weight: 0, price:""},
+            pointers:{},
             values:{en:{body:"", link__label: "", link__url: ""}}
           }
         ],
         range:[
           {
             attributes:{_weight:0, price:"100"},
+            pointers:{},
             values:{en:{name:"entry class"}}
           },
           {
             attributes:{price:"200"},
+            pointers:{},
             values:{}
           },
           {
             attributes:{price:"500"},
+            pointers:{},
             values:{}
           }
         ]
@@ -312,6 +391,7 @@ describe('page helper test', () => {
         _type: "pages",
         city: ""
       },
+      pointers:{},
       values:{
         en:{name: "", body: "", link__label : "", link__url : ""}
       },
@@ -319,6 +399,7 @@ describe('page helper test', () => {
         todo:[
           {
             attributes:{_weight:0, price:""},
+            pointers:{},
             values:{en:{body:"", link__label: "", link__url: ""}}
           }
         ]
@@ -326,11 +407,13 @@ describe('page helper test', () => {
       blocks:[
         {
           attributes:{_weight:0, _type: "paragraph", city:"block city"},
+          pointers:{},
           values: {},
           items: {}
         },
         {
           attributes:{_weight: 1, _type: "text"},
+          pointers:{},
           values: {
             'zh-hant':{
               name:"髮髮"
@@ -351,7 +434,9 @@ describe('page helper test', () => {
         city: "",
         name: "",
         body: "",
-        todo:[{ _weight: 0, price:"", body:"", link:{label:"",url:""}}],
+        link__label: "",
+        link__url: "",
+        todo:[{ _weight: 0, price:"", body:"", link__label: "", link__url: "", link:{label:"",url:""}}],
         link:{label:"",url:""},
       },
       blocks:[
@@ -376,6 +461,7 @@ describe('page helper test', () => {
         "_type": "pages",
         "city": ""
       },
+      "pointers": {},
       "values": {
         "en": {
           "name": "",
@@ -390,6 +476,7 @@ describe('page helper test', () => {
             "attributes": {
               "_weight": 0
             },
+            "pointers": {},
             "values": {
               "en": {
                 "body": "",
@@ -409,6 +496,7 @@ describe('page helper test', () => {
         "city": "",
         "_weight": 0
       },
+      "pointers": {},
       "values": {
         "en": {
           "name": "whatsup",
@@ -426,6 +514,7 @@ describe('page helper test', () => {
             "attributes": {
               "_weight": 0
             },
+            "pointers": {},
             "values": {
               "en": {
                 "body": "hello"
@@ -443,6 +532,7 @@ describe('page helper test', () => {
         "city": "",
         "_weight": 0
       },
+      "pointers": {},
       "values": {
         "en": {
           "name": "whatsup",
@@ -460,6 +550,7 @@ describe('page helper test', () => {
             "attributes": {
               "_weight": 0
             },
+            "pointers": {},
             "values": {
               "en": {
                 "body": "hello",
