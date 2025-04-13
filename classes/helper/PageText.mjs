@@ -1,4 +1,5 @@
-import {Central} from '@lionrockjs/central';
+import {Central, Controller} from '@lionrockjs/central';
+import fs from "node:fs";
 
 export default class HelperPageText{
   static defaultOriginal(){
@@ -9,7 +10,18 @@ export default class HelperPageText{
     return {"attributes":{},"pointers":{},"values":{}}
   }
 
-  static getOriginal(page, attributes={}){
+  static getOriginal(page, attributes={}, state=new Map()){
+    const version = state.get(Controller.STATE_QUERY)?.version;
+
+    if(version){
+      const versionFile = `${Central.config.cms.versionPath}/${page.id}/${version}.json`;
+      if(fs.existsSync(versionFile)){
+        return JSON.parse(fs.readFileSync(versionFile));
+      }else{
+        throw new Error(`Version ${version} not found`);
+      }
+    }
+
     if(!page.original)return this.defaultOriginal();
 
     const original = JSON.parse(page.original);

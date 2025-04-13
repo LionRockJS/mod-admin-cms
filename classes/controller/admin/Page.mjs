@@ -241,7 +241,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     //save original to json with version path
     if(JSON.stringify(original) !== presave){
-      const targetFile = `${Central.config.cms.versionPath}/${instance.id}/${instance.slug}.${Math.floor(Date.now()/1000)}.json`;
+      const targetFile = `${Central.config.cms.versionPath}/${instance.id}/${Math.floor(Date.now()/1000)}.json`;
       const targetDirectory = path.dirname(targetFile);
       //create folder if not exist
       try{
@@ -254,7 +254,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         }
       }
 
-      fs.writeFileSync(targetFile, JSON.stringify(original, null, 2));
+      fs.writeFileSync(targetFile, JSON.stringify({...original, attributes: {_slug: instance.slug}}, null, 2));
     }
 
     const destination = $_POST.destination || `/admin/${this.controller_slug}/${instance.id}`;
@@ -493,7 +493,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const page = this.state.get('instance');
     const livePage = await ORM.readBy(Page, 'id', [page.id], {database: liveDatabase, limit:1, asArray:false});
 
-    const original = HelperPageText.getOriginal(page);
+    //if querystring have version, original use version from file
+
+    const original = HelperPageText.getOriginal(page, {}, this.state);
     const defaultOriginal = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage);
 
     //resolve pointer with print
