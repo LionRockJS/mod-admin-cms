@@ -19,9 +19,6 @@ export default class ControllerAdminUpload extends Controller{
   constructor(request){
     super(request);
 
-    this.state.get(ControllerMixinDatabase.DATABASE_MAP)
-      .set('session', `${Central.config.auth.databasePath}/session.sqlite`);
-
     this.state.set(ControllerMixinLoginRequire.REJECT_LANDING, '/login');
     this.state.set(ControllerMixinLoginRequire.ALLOW_ROLES, new Set(['admin', 'staff', 'moderator']));
 

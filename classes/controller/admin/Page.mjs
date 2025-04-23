@@ -548,6 +548,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
   async action_delete(){
     if(this.state.get(ControllerMixinORMDelete.DELETED)){
+      const checkpoint = this.state.get(Controller.STATE_CHECKPOINT);
+
       const page = this.state.get(ControllerMixinORMDelete.INSTANCE);
       await this.unpublish(page.id);
 
@@ -560,7 +562,11 @@ export default class ControllerAdminPage extends ControllerAdmin {
       }
 
       //redirect to page type index
-      await this.redirect(`/admin/pages/list/${page.page_type}`, true);
+      if(checkpoint){
+        await this.redirect(checkpoint, false);
+      }else{
+        await this.redirect(`/admin/pages/list/${page.page_type}`, true);
+      }
     }
   }
 
