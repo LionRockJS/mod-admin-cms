@@ -76,9 +76,9 @@ export default class HelperPageEdit{
         const blueprint = blueprints[pageType] ?? blueprints.default;
         if(!blueprint)return original;
 
-        const attributes = blueprint.filter(it => typeof it !== 'object').filter(it => /^@/.test(it)).map(it => it.substring(1));
-        const pointers   = blueprint.filter(it => typeof it !== 'object').filter(it => /^\*/.test(it)).map(it => it.substring(1));
-        const values     = blueprint.filter(it => typeof it !== 'object').filter(it => /^[^@*]/.test(it));
+        const attributes = blueprint.filter(it => typeof it !== 'object').filter(it => /^@/.test(it)).map(it => it.substring(1).split(":")[0]);
+        const pointers   = blueprint.filter(it => typeof it !== 'object').filter(it => /^\*/.test(it)).map(it => it.substring(1).split(":")[0]);
+        const values     = blueprint.filter(it => typeof it !== 'object').filter(it => /^[^@*]/.test(it)).map(it => it.split(":")[0]);
         const items      = blueprint.filter(it => typeof it === 'object')
 
         original.attributes = {_type:pageType, ...this.definitionInstance(attributes)};
@@ -87,9 +87,9 @@ export default class HelperPageEdit{
 
         items.forEach(item =>{
             const key = Object.keys(item)[0];
-            const itemAttributes = item[key].filter(it=>/^@/.test(it)).map(it => it.substring(1));
-            const itemPointers   = item[key].filter(it=>/^\*/.test(it)).map(it => it.substring(1));
-            const itemValues     = item[key].filter(it => /^[^@*]/.test(it));
+            const itemAttributes = item[key].filter(it=>/^@/.test(it)).map(it => it.substring(1).split(":")[0]);
+            const itemPointers   = item[key].filter(it=>/^\*/.test(it)).map(it => it.substring(1).split(":")[0]);
+            const itemValues     = item[key].filter(it => /^[^@*]/.test(it)).map(it => it.split(":")[0]);
 
             const defaultItem = HelperPageText.defaultOriginalItem();
             defaultItem.attributes._weight = 0;
