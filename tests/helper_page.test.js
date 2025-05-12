@@ -247,6 +247,128 @@ describe('page helper test', () => {
     )
   })
 
+  test('inputs to blocks for existing original', ()=>{
+    const input = {
+      "@_type": "pages",
+      "@city":"city",
+      ".name":"foo",
+      ".name|zh-hant":"髮",
+      ".body":"bar",
+      ".link__label":"click me",
+      ".link__url":"https://www.example.com",
+      ".todo[0]@price":"160",
+      ".todo[0].body":"tar",
+      ".todo[0].link__label":"details",
+      ".todo[0].link__url":"https://www.example.com/details",
+      ".todo[1]@price":"160",
+      ".todo[1].body":"sha",
+      "#0@_type":"paragraph",
+      "#0@city":"block city",
+    }
+
+    const print = HelperPageText.mergeOriginals(
+        {
+          "attributes": {
+            "_type": "pages",
+            "city": ""
+          },
+          "pointers": {},
+          "values": {
+            "en": {
+              "name": "",
+              "body": "",
+              "link__label": "",
+              "link__url": ""
+            }
+          },
+          "items": {
+            "todo": [
+              {
+                "attributes": {
+                  "_weight": 0,
+                  "price": ""
+                },
+                "pointers": {},
+                "values": {
+                  "en": {
+                    "body": "",
+                    "link__label": "",
+                    "link__url": ""
+                  }
+                }
+              }
+            ]
+          },
+          blocks:[
+            {
+              attributes:{_type: "paragraph", city:"block city"},
+              pointers:{},
+              values: {
+                en:{}
+              },
+              items: {}
+            },
+            {
+              attributes:{_type: "foo", value:"300"},
+              pointers:{},
+              values: {
+                en:{}
+              },
+              items: {}
+            }
+          ]
+        }
+        ,
+        HelperPageEdit.postToOriginal(input, "en")
+    );
+
+    expect(JSON.stringify(print)).toBe(
+        JSON.stringify({
+          attributes:{
+            _type: "pages",
+            city: "city"
+          },
+          pointers:{},
+          values:{
+            en:{name: "foo", body: "bar", link__label : "click me", link__url : "https://www.example.com"},
+            "zh-hant":{name:"髮"},
+          },
+          items:{
+            todo:[
+              {
+                attributes:{ _weight: 0, price:"160"},
+                pointers:{},
+                values:{en:{body:"tar", link__label: "details", link__url: "https://www.example.com/details"}}
+              },
+              {
+                attributes:{ price:"160"},
+                pointers:{},
+                values:{en:{body:"sha"}}
+              }
+            ]
+          },
+          blocks:[
+            {
+              attributes:{_type: "paragraph", city:"block city"},
+              pointers:{},
+              values: {
+                en:{}
+              },
+              items: {}
+            },
+            {
+              attributes:{_type: "foo", value:"300"},
+              pointers:{},
+              values: {
+                en:{}
+              },
+              items: {}
+            }
+          ]
+        })
+    )
+  })
+
   test('merge originals', () =>{
     const post1 = {
       ".name": "Megahit",
