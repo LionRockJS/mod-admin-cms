@@ -10,8 +10,6 @@ type Pages implements IName{
   page_type: String
   current_page_version_id:Int
   original: String
-
-  belongsTo: Pages
 }
 
 type PageTags{

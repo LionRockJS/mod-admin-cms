@@ -64,8 +64,107 @@ export default class HelperPageText{
       }
     });
 
-    if(target.blocks || source.blocks){
-      result.blocks = [].concat((target.blocks || []), source.blocks).filter(it => !!it);
+    if (target.blocks || source.blocks) {
+      result.blocks = [];
+
+      const targetBlocks = target.blocks || [];
+      const sourceBlocks = source.blocks || [];
+
+      // Merge blocks from target and source
+      for (let i = 0; i < Math.min(targetBlocks.length, sourceBlocks.length); i++) {
+        const targetBlock = targetBlocks[i];
+        const sourceBlock = sourceBlocks[i];
+
+        if (!targetBlock && !sourceBlock) {
+          result.blocks.push(null);
+          continue;
+        }
+
+        if (targetBlock && !sourceBlock) {
+          result.blocks.push(targetBlock);
+          continue;
+        }
+
+        if (!targetBlock && sourceBlock) {
+          result.blocks.push(sourceBlock);
+          continue;
+        }
+
+        // Merge blocks
+        const mergedBlock = {
+          attributes: { ...(targetBlock.attributes || {}), ...(sourceBlock.attributes || {}) },
+          pointers: { ...(targetBlock.pointers || {}), ...(sourceBlock.pointers || {}) },
+          values: {}
+        };
+
+        // Merge values
+        const blockLanguageSet = new Set([
+          ...Object.keys(targetBlock.values || {}),
+          ...Object.keys(sourceBlock.values || {})
+        ]);
+
+        blockLanguageSet.forEach(language => {
+          const targetValues = targetBlock.values?.[language] || {};
+          const sourceValues = sourceBlock.values?.[language] || {};
+          mergedBlock.values[language] = { ...targetValues, ...sourceValues };
+        });
+
+        // Merge items if present
+        if (targetBlock.items || sourceBlock.items) {
+          mergedBlock.items = {};
+
+          const blockItemSet = new Set([
+            ...Object.keys(targetBlock.items || {}),
+            ...Object.keys(sourceBlock.items || {})
+          ]);
+
+          blockItemSet.forEach(itemType => {
+            const targetItems = targetBlock.items?.[itemType] || [];
+            const sourceItems = sourceBlock.items?.[itemType] || [];
+            mergedBlock.items[itemType] = [];
+
+            const length = Math.max(targetItems.length, sourceItems.length);
+            for (let j = 0; j < length; j++) {
+              const targetItem = j < targetItems.length ? targetItems[j] : null;
+              const sourceItem = j < sourceItems.length ? sourceItems[j] : null;
+
+              if (!targetItem && !sourceItem) continue;
+
+              const mergedItem = {
+                attributes: { ...(targetItem?.attributes || {}), ...(sourceItem?.attributes || {}) },
+                pointers: { ...(targetItem?.pointers || {}), ...(sourceItem?.pointers || {}) },
+                values: {}
+              };
+
+              // Merge item values
+              const itemLanguageSet = new Set([
+                ...Object.keys(targetItem?.values || {}),
+                ...Object.keys(sourceItem?.values || {})
+              ]);
+
+              itemLanguageSet.forEach(language => {
+                const targetValues = targetItem?.values?.[language] || {};
+                const sourceValues = sourceItem?.values?.[language] || {};
+                mergedItem.values[language] = { ...targetValues, ...sourceValues };
+              });
+
+              mergedBlock.items[itemType].push(mergedItem);
+            }
+          });
+        }
+
+        result.blocks.push(mergedBlock);
+      }
+
+      // Append remaining blocks from whichever array is longer
+      const remainingBlocks = targetBlocks.length > sourceBlocks.length
+        ? targetBlocks.slice(sourceBlocks.length)
+        : sourceBlocks.slice(targetBlocks.length);
+
+      result.blocks.push(...remainingBlocks);
+
+      // Remove empty blocks
+      result.blocks = result.blocks.filter(block => !!block);
     }
 
     return result;

@@ -1,7 +1,6 @@
 import { Model } from '@lionrockjs/central';
 
 export default class Page extends Model{
-  page_id = null;
   name = null;
   slug = null;
   weight = 5;
@@ -25,10 +24,8 @@ export default class Page extends Model{
     ["original", "String"]
   ]);
   static belongsTo = new Map([
-    ["page_id", "Page"]
   ]);
   static hasMany = [
-    ["page_id", "Page"],
     ["page_id", "PageTag"]
   ];
 }
