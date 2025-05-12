@@ -1,6 +1,99 @@
 import {Central, Controller} from '@lionrockjs/central';
 import fs from "node:fs";
 
+  /**
+   * Private helper class containing merge utility methods
+   * @private
+   */
+class Merger {
+    /**
+     * Merges language-specific values from target and source objects
+     */
+    static mergeLanguageValues(targetValues = {}, sourceValues = {}) {
+      const languageSet = new Set([...Object.keys(targetValues), ...Object.keys(sourceValues)]);
+      const result = {};
+      
+      languageSet.forEach(language => {
+        const targetLangValues = targetValues[language] || {};
+        const sourceLangValues = sourceValues[language] || {};
+        result[language] = {...targetLangValues, ...sourceLangValues};
+      });
+      
+      return result;
+    }
+    
+    /**
+     * Merges basic properties (attributes and pointers) from target and source objects
+     */
+    static mergeBasicProps(target = {}, source = {}) {
+      return {
+        attributes: {...(target.attributes || {}), ...(source.attributes || {})},
+        pointers: {...(target.pointers || {}), ...(source.pointers || {})}
+      };
+    }
+    
+    /**
+     * Merges arrays of items, handling nested properties
+     */
+    static mergeItemArrays(targetItems = [], sourceItems = []) {
+      const result = [];
+      const length = Math.max(targetItems.length, sourceItems.length);
+      
+      for (let i = 0; i < length; i++) {
+        const targetItem = targetItems[i];
+        const sourceItem = sourceItems[i];
+        
+        // If one side is missing, use the other
+        if (!targetItem && !sourceItem) {
+          result.push(null);
+          continue;
+        }
+        
+        if (targetItem && !sourceItem) {
+          result.push(targetItem);
+          continue;
+        }
+        
+        if (!targetItem && sourceItem) {
+          result.push(sourceItem);
+          continue;
+        }
+        
+        // Merge the items
+        const mergedItem = {
+          ...this.mergeBasicProps(targetItem, sourceItem),
+          values: this.mergeLanguageValues(targetItem.values, sourceItem.values)
+        };
+        
+        // Handle nested items if they exist
+        if (targetItem.items || sourceItem.items) {
+          mergedItem.items = this.mergeItems(targetItem.items, sourceItem.items);
+        }
+        
+        result.push(mergedItem);
+      }
+      
+      return result.filter(item => !!item);
+    }
+    
+    /**
+     * Merges item collections from target and source objects
+     */
+    static mergeItems(targetItems = {}, sourceItems = {}) {
+      const result = {};
+      const itemTypes = new Set([...Object.keys(targetItems), ...Object.keys(sourceItems)]);
+      
+      itemTypes.forEach(itemType => {
+        result[itemType] = this.mergeItemArrays(
+          targetItems[itemType] || [],
+          sourceItems[itemType] || []
+        );
+      });
+      
+      return result;
+    }
+  }
+
 export default class HelperPageText{
   static defaultOriginal(){
     return {...this.defaultOriginalItem(),"items":{}};
@@ -30,143 +123,33 @@ export default class HelperPageText{
     return original;
   }
 
+  /**
+   * Merges two original objects by combining their properties
+   */
   static mergeOriginals(target, source) {
+    // Create default result structure
     const result = this.defaultOriginal();
-    result.attributes = {...target.attributes, ...source.attributes};
-    result.pointers = {...target.pointers, ...source.pointers};
-
-    const languageSet = new Set([...Object.keys(target.values), ...Object.keys(source.values)]);
-    languageSet.forEach(language =>{
-      const targetValues = target.values[language] || {};
-      const sourceValues = source.values[language] || {};
-      result.values[language] = {...targetValues, ...sourceValues}
-    });
-
-    const itemSet = new Set([...Object.keys(target.items), ...Object.keys(source.items)]);
-    itemSet.forEach( itemType => {
-      const targetItems = target.items[itemType] || [];
-      const sourceItems = source.items[itemType] || [];
-      result.items[itemType] = [];
-
-      const length = Math.max(targetItems.length, sourceItems.length);
-      for( let i=0; i<length; i++){
-        result.items[itemType][i] = {attributes:{}, pointers:{}, values:{}};
-        const resultItem = result.items[itemType][i];
-        resultItem.attributes = {...targetItems[i]?.attributes, ...sourceItems[i]?.attributes};
-        resultItem.pointers = {...targetItems[i]?.pointers, ...sourceItems[i]?.pointers};
-
-        const itemLanguageSet = new Set([...Object.keys(targetItems[i]?.values || {}), ...Object.keys(sourceItems[i]?.values || {})]);
-        itemLanguageSet.forEach(language =>{
-          const targetValues = targetItems[i]?.values[language] || {};
-          const sourceValues = sourceItems[i]?.values[language] || {};
-          resultItem.values[language] = {...targetValues, ...sourceValues}
-        });
-      }
-    });
-
+    
+    // Merge basic properties
+    const basicProps = Merger.mergeBasicProps(target, source);
+    result.attributes = basicProps.attributes;
+    result.pointers = basicProps.pointers;
+    
+    // Merge language values
+    result.values = Merger.mergeLanguageValues(target.values, source.values);
+    
+    // Merge items
+    result.items = Merger.mergeItems(target.items, source.items);
+    
+    // Merge blocks if they exist
     if (target.blocks || source.blocks) {
-      result.blocks = [];
-
       const targetBlocks = target.blocks || [];
       const sourceBlocks = source.blocks || [];
-
-      // Merge blocks from target and source
-      for (let i = 0; i < Math.min(targetBlocks.length, sourceBlocks.length); i++) {
-        const targetBlock = targetBlocks[i];
-        const sourceBlock = sourceBlocks[i];
-
-        if (!targetBlock && !sourceBlock) {
-          result.blocks.push(null);
-          continue;
-        }
-
-        if (targetBlock && !sourceBlock) {
-          result.blocks.push(targetBlock);
-          continue;
-        }
-
-        if (!targetBlock && sourceBlock) {
-          result.blocks.push(sourceBlock);
-          continue;
-        }
-
-        // Merge blocks
-        const mergedBlock = {
-          attributes: { ...(targetBlock.attributes || {}), ...(sourceBlock.attributes || {}) },
-          pointers: { ...(targetBlock.pointers || {}), ...(sourceBlock.pointers || {}) },
-          values: {}
-        };
-
-        // Merge values
-        const blockLanguageSet = new Set([
-          ...Object.keys(targetBlock.values || {}),
-          ...Object.keys(sourceBlock.values || {})
-        ]);
-
-        blockLanguageSet.forEach(language => {
-          const targetValues = targetBlock.values?.[language] || {};
-          const sourceValues = sourceBlock.values?.[language] || {};
-          mergedBlock.values[language] = { ...targetValues, ...sourceValues };
-        });
-
-        // Merge items if present
-        if (targetBlock.items || sourceBlock.items) {
-          mergedBlock.items = {};
-
-          const blockItemSet = new Set([
-            ...Object.keys(targetBlock.items || {}),
-            ...Object.keys(sourceBlock.items || {})
-          ]);
-
-          blockItemSet.forEach(itemType => {
-            const targetItems = targetBlock.items?.[itemType] || [];
-            const sourceItems = sourceBlock.items?.[itemType] || [];
-            mergedBlock.items[itemType] = [];
-
-            const length = Math.max(targetItems.length, sourceItems.length);
-            for (let j = 0; j < length; j++) {
-              const targetItem = j < targetItems.length ? targetItems[j] : null;
-              const sourceItem = j < sourceItems.length ? sourceItems[j] : null;
-
-              if (!targetItem && !sourceItem) continue;
-
-              const mergedItem = {
-                attributes: { ...(targetItem?.attributes || {}), ...(sourceItem?.attributes || {}) },
-                pointers: { ...(targetItem?.pointers || {}), ...(sourceItem?.pointers || {}) },
-                values: {}
-              };
-
-              // Merge item values
-              const itemLanguageSet = new Set([
-                ...Object.keys(targetItem?.values || {}),
-                ...Object.keys(sourceItem?.values || {})
-              ]);
-
-              itemLanguageSet.forEach(language => {
-                const targetValues = targetItem?.values?.[language] || {};
-                const sourceValues = sourceItem?.values?.[language] || {};
-                mergedItem.values[language] = { ...targetValues, ...sourceValues };
-              });
-
-              mergedBlock.items[itemType].push(mergedItem);
-            }
-          });
-        }
-
-        result.blocks.push(mergedBlock);
-      }
-
-      // Append remaining blocks from whichever array is longer
-      const remainingBlocks = targetBlocks.length > sourceBlocks.length
-        ? targetBlocks.slice(sourceBlocks.length)
-        : sourceBlocks.slice(targetBlocks.length);
-
-      result.blocks.push(...remainingBlocks);
-
-      // Remove empty blocks
-      result.blocks = result.blocks.filter(block => !!block);
+      
+      // Use the same item merging logic for blocks
+      result.blocks = Merger.mergeItemArrays(targetBlocks, sourceBlocks);
     }
-
+    
     return result;
   }
 

@@ -436,6 +436,50 @@ describe('page helper test', () => {
     }))
   })
 
+  test('get_blueprint_props', () => {
+    // This test is specifically to cover line 52 in PageEdit.mjs
+    const config_blueprint = [
+      '@attribute1', // attribute starts with @
+      '*pointer1',    // pointer starts with *
+      'field1',      // regular field (this will hit line 52)
+      {
+        item1: [
+          '@nested_attr',
+          '*nested_ptr',
+          'nested_field'
+        ]
+      }
+    ];
+
+    const result = HelperPageEdit.get_blueprint_props(config_blueprint);
+    
+    // Check that attributes were processed correctly
+    expect(result.attributes).toEqual([{
+      name: 'attribute1',
+      type: 'text'
+    }]);
+    
+    // Check that pointers were processed correctly
+    expect(result.pointers).toEqual([{
+      name: 'pointer1',
+      type: 'page/basic'
+    }]);
+    
+    // Check that fields were processed correctly (this tests line 52)
+    expect(result.fields).toEqual([{
+      name: 'field1',
+      type: 'text'
+    }]);
+    
+    // Check that nested items were processed correctly
+    expect(result.items).toEqual([{
+      name: 'item1',
+      attributes: [{ name: 'nested_attr', type: 'text' }],
+      pointers: [{ name: 'nested_ptr', type: 'page/basic' }],
+      fields: [{ name: 'nested_field', type: 'text' }]
+    }]);
+  });
+
   test('original to print', ()=>{
     const original = {
       attributes:{
