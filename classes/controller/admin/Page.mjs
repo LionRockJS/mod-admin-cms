@@ -500,11 +500,12 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const defaultOriginal = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage);
 
     //resolve pointer with print
-    await ControllerAdminPage.resolvePointer(this.state, original);
+    await HelperPageText.resolvePointer(database, original, this.state.get(Controller.STATE_LANGUAGE));
 
-    page.print = HelperPageText.originalToPrint(HelperPageEdit.mergeOriginals(defaultOriginal, original), language, null, false);
-
-
+    page.print = HelperPageText.originalToPrint(
+      HelperPageEdit.mergeOriginals(defaultOriginal, original),
+      language, null, false
+    );
 
     const placeholders = HelperPageText.originalToPrint(original, language, Central.config.cms.defaultLanguage, false);
 
@@ -539,7 +540,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
       templateTags[tag.tag_type.name].push({id:tag.id, name: tag.name, value: print.tokens.name || tag.name})
     })
     /** end parse tag **/
-
     this.setEditTemplate(page, livePage, placeholders, templateTags);
   }
 
