@@ -1,4 +1,4 @@
-import HelperPageText from "../classes/helper/PageText.mjs";
+import {HelperPageText} from "@lionrockjs/mod-cms-read";
 import HelperPageEdit from "../classes/helper/PageEdit.mjs";
 
 const blueprint = {
@@ -203,7 +203,7 @@ describe('page helper test', () => {
       "#0@city":"block city",
     }
 
-    const print = HelperPageText.mergeOriginals(
+    const print = HelperPageEdit.mergeOriginals(
       HelperPageEdit.blueprint('pages', blueprint),
       HelperPageEdit.postToOriginal(input, "en")
     );
@@ -266,7 +266,7 @@ describe('page helper test', () => {
       "#0@city":"block city",
     }
 
-    const print = HelperPageText.mergeOriginals(
+    const print = HelperPageEdit.mergeOriginals(
         {
           "attributes": {
             "_type": "pages",
@@ -384,18 +384,18 @@ describe('page helper test', () => {
     }
 
 
-    const originalPage = HelperPageText.mergeOriginals(
+    const originalPage = HelperPageEdit.mergeOriginals(
         HelperPageEdit.blueprint('pages', blueprint),
         HelperPageEdit.postToOriginal(post1, "en")
     );
 
-    const originalPoster = HelperPageText.mergeOriginals(
+    const originalPoster = HelperPageEdit.mergeOriginals(
         HelperPageEdit.blueprint('poster', blueprint),
         HelperPageEdit.postToOriginal(post2, "en")
     )
 
 
-    const original = HelperPageText.mergeOriginals(originalPage, originalPoster);
+    const original = HelperPageEdit.mergeOriginals(originalPage, originalPoster);
 
     expect(JSON.stringify(original)).toBe(JSON.stringify({
       attributes:{
@@ -621,7 +621,7 @@ describe('page helper test', () => {
       "blocks": []
     }
 
-    expect(JSON.stringify(HelperPageText.mergeOriginals(defaultOriginal, pageOriginal))).toBe(JSON.stringify({
+    expect(JSON.stringify(HelperPageEdit.mergeOriginals(defaultOriginal, pageOriginal))).toBe(JSON.stringify({
       "attributes": {
         "_type": "pages",
         "city": "",

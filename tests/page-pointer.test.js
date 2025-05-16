@@ -1,4 +1,3 @@
-import HelperPageText from "../classes/helper/PageText.mjs";
 import HelperPageEdit from "../classes/helper/PageEdit.mjs";
 
 const blueprint = {

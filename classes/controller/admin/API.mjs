@@ -1,6 +1,6 @@
 import {Controller, ControllerMixinDatabase, Central, ORM} from '@lionrockjs/central';
 import {ControllerAdmin} from '@lionrockjs/mod-admin';
-import HelperPageText from "../../helper/PageText.mjs";
+import {HelperPageText} from "@lionrockjs/mod-cms-read";
 
 import DefaultPage from '../../model/Page.mjs';
 import DefaultPageTag from '../../model/PageTag.mjs';

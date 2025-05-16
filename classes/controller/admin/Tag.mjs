@@ -1,7 +1,7 @@
 import { Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM } from '@lionrockjs/central';
 import { ControllerAdmin } from '@lionrockjs/mod-admin';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
-import HelperPageText from "../../helper/PageText.mjs";
+import {HelperPageText} from "@lionrockjs/mod-cms-read";
 
 import DefaultPageTag from '../../model/PageTag.mjs';
 import DefaultTag from '../../model/Tag.mjs';

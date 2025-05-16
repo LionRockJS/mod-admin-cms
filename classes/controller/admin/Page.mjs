@@ -7,13 +7,14 @@ import {ControllerAdmin, ControllerMixinAdminTemplates, ControllerMixinImport} f
 import {Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM, Model} from '@lionrockjs/central';
 import {ControllerMixinORMDelete, ControllerMixinORMRead} from '@lionrockjs/mixin-orm';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
+import {HelperPageText} from "@lionrockjs/mod-cms-read";
+
 import slugify from 'slugify';
 
 import DefaultPage from '../../model/Page.mjs';
 import DefaultPageTag from '../../model/PageTag.mjs';
 import DefaultTag from '../../model/Tag.mjs';
 import DefaultTagType from '../../model/TagType.mjs';
-import HelperPageText from '../../helper/PageText.mjs';
 import HelperPageEdit from "../../helper/PageEdit.mjs";
 
 const Page = await ORM.import('Page', DefaultPage);
@@ -173,7 +174,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     }
 
     const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
-    const original = HelperPageText.getOriginal(instance);
+    const original = HelperPageEdit.getOriginal(instance);
 
     //collect tags and write to original
     await instance.eagerLoad({with:['PageTag']}, {database});
@@ -182,9 +183,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const tagTypeMap = new Map(tagTypes.map(it => [it.id, it.name]));
     const tags = await ORM.readBy(Tag, 'id', instance.page_tags.map(it => it.tag_id), {database: databaseTag, asArray:true });
 
-    original.tags = tags.map(tag => HelperPageText.getOriginal(tag, {_id: tag.id, _type_id: tag.tag_type_id, _type:tagTypeMap.get(tag.tag_type_id)}));
+    original.tags = tags.map(tag => HelperPageEdit.getOriginal(tag, {_id: tag.id, _type_id: tag.tag_type_id, _type:tagTypeMap.get(tag.tag_type_id)}));
 
-    instance.original = JSON.stringify(HelperPageText.mergeOriginals(original, postOriginal));
+    instance.original = JSON.stringify(HelperPageEdit.mergeOriginals(original, postOriginal));
     await instance.write();
 
     const dbAttribute = this.state.get(ControllerMixinDatabase.DATABASES).get('draft_attribute');
@@ -324,7 +325,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     if(PageModel !== ORM){ // page attribute model exists,
       //write all attributes with page_id
       const attr = ORM.create(PageModel, {database: dbAttribute, insertID: page.id});
-      const original = HelperPageText.getOriginal(page);
+      const original = HelperPageEdit.getOriginal(page);
       Object.assign(attr, original.attributes);
       await attr.write();
     }
@@ -440,7 +441,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
       let print = prints.get(pageId);
       if(!print){
         const page = await ORM.factory(Page, pageId, {database, asArray:false});
-        const original = HelperPageText.getOriginal(page);
+        const original = HelperPageEdit.getOriginal(page);
         original.items = {};
         original.blocks = [];
 
@@ -464,7 +465,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
           let print = prints.get(pageId);
           if(!print){
             const page = await ORM.factory(Page, pageId, {database, asArray:false});
-            const original = HelperPageText.getOriginal(page);
+            const original = HelperPageEdit.getOriginal(page);
             original.items = {};
             original.blocks = [];
 
@@ -495,13 +496,13 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     //if querystring have version, original use version from file
 
-    const original = HelperPageText.getOriginal(page, {}, this.state);
+    const original = HelperPageEdit.getOriginal(page, {}, this.state);
     const defaultOriginal = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage);
 
     //resolve pointer with print
     await ControllerAdminPage.resolvePointer(this.state, original);
 
-    page.print = HelperPageText.originalToPrint(HelperPageText.mergeOriginals(defaultOriginal, original), language, null);
+    page.print = HelperPageText.originalToPrint(HelperPageEdit.mergeOriginals(defaultOriginal, original), language, null);
 
 
 
@@ -519,7 +520,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     page.tags = {};
     page.page_tags.forEach(page_tag => {
       const tag = page_tag.tag;
-      const print = HelperPageText.originalToPrint(HelperPageText.getOriginal(tag), language, Central.config.cms.defaultLanguage);
+      const print = HelperPageText.originalToPrint(HelperPageEdit.getOriginal(tag), language, Central.config.cms.defaultLanguage);
       page.tags[tag.tag_type.name] ||= [];
       page.tags[tag.tag_type.name].push({id:page_tag.id, name: tag.name, value: print.tokens.name || tag.name});
     });
@@ -533,7 +534,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     tags.forEach(tag => {
       if(pageTagSet.has(tag.id))return;
 
-      const print = HelperPageText.originalToPrint(HelperPageText.getOriginal(tag), language, Central.config.cms.defaultLanguage);
+      const print = HelperPageText.originalToPrint(HelperPageEdit.getOriginal(tag), language, Central.config.cms.defaultLanguage);
       templateTags[tag.tag_type.name] ||= [];
       templateTags[tag.tag_type.name].push({id:tag.id, name: tag.name, value: print.tokens.name || tag.name})
     })
@@ -598,7 +599,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const defaultBlock = HelperPageEdit.blueprint(blockName, Central.config.cms.blocks, Central.config.cms.defaultLanguage);
     delete defaultBlock.blocks;
 
-    const original = HelperPageText.getOriginal(page);
+    const original = HelperPageEdit.getOriginal(page);
     original.blocks ||=[];
     original.blocks.push(defaultBlock);
 
@@ -616,7 +617,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
   }
 
   async block_item_add(page, blockIndex, itemName, count=1){
-    const original = HelperPageText.getOriginal(page);
+    const original = HelperPageEdit.getOriginal(page);
     const blockItems = original.blocks[blockIndex].items[itemName];
     for(let i=0; i<count; i++){
       blockItems.push({attributes:{_weight: blockItems.length}, values:{}});
@@ -637,7 +638,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
   async item_add(page, itemName, count=1){
     const defaultOriginal = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en');
     const defaultItem = defaultOriginal.items[itemName][0];
-    const original = HelperPageText.getOriginal(page);
+    const original = HelperPageEdit.getOriginal(page);
 
     if(!original.items[itemName]){
       //create first item
