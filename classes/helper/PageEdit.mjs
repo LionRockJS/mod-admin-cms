@@ -202,7 +202,7 @@ export default class HelperPageEdit{
         const original = HelperPageText.defaultOriginal();
         original.values[langauge] = {};
 
-        Object.keys($_POST).forEach(name => {
+        Object.keys($_POST).sort().forEach(name => {
             //parse attributes
             const value = $_POST[name];
 
