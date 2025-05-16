@@ -351,6 +351,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
       }
     })
 
+    console.log(JSON.stringify(page, null, 2));
+
     //assign block index as block key, block item index as block item key
     page.print.blocks.forEach((block, i) =>{
       block._weight = parseInt(block.tokens._weight);
@@ -445,7 +447,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         original.items = {};
         original.blocks = [];
 
-        print = HelperPageText.originalToPrint(original, state.get(Controller.STATE_LANGUAGE), Central.config.cms.defaultLanguage);
+        print = HelperPageText.originalToPrint(original, state.get(Controller.STATE_LANGUAGE), Central.config.cms.defaultLanguage, false);
         print.tokens.id = page.id;
         prints.set(pageId, print);
       }
@@ -469,7 +471,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
             original.items = {};
             original.blocks = [];
 
-            print = HelperPageText.originalToPrint(original, state.get(Controller.STATE_LANGUAGE), Central.config.cms.defaultLanguage);
+            print = HelperPageText.originalToPrint(original, state.get(Controller.STATE_LANGUAGE), Central.config.cms.defaultLanguage, false);
             print.tokens.id = page.id;
             prints.set(pageId, print);
           }
@@ -502,11 +504,11 @@ export default class ControllerAdminPage extends ControllerAdmin {
     //resolve pointer with print
     await ControllerAdminPage.resolvePointer(this.state, original);
 
-    page.print = HelperPageText.originalToPrint(HelperPageEdit.mergeOriginals(defaultOriginal, original), language, null);
+    page.print = HelperPageText.originalToPrint(HelperPageEdit.mergeOriginals(defaultOriginal, original), language, null, false);
 
 
 
-    const placeholders = HelperPageText.originalToPrint(original, language, Central.config.cms.defaultLanguage);
+    const placeholders = HelperPageText.originalToPrint(original, language, Central.config.cms.defaultLanguage, false);
 
     /** parse tags across database **/
     await page.eagerLoad({ with:['PageTag'] }, {database});
@@ -520,7 +522,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     page.tags = {};
     page.page_tags.forEach(page_tag => {
       const tag = page_tag.tag;
-      const print = HelperPageText.originalToPrint(HelperPageEdit.getOriginal(tag), language, Central.config.cms.defaultLanguage);
+      const print = HelperPageText.originalToPrint(HelperPageEdit.getOriginal(tag), language, Central.config.cms.defaultLanguage, false);
       page.tags[tag.tag_type.name] ||= [];
       page.tags[tag.tag_type.name].push({id:page_tag.id, name: tag.name, value: print.tokens.name || tag.name});
     });
@@ -534,7 +536,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     tags.forEach(tag => {
       if(pageTagSet.has(tag.id))return;
 
-      const print = HelperPageText.originalToPrint(HelperPageEdit.getOriginal(tag), language, Central.config.cms.defaultLanguage);
+      const print = HelperPageText.originalToPrint(HelperPageEdit.getOriginal(tag), language, Central.config.cms.defaultLanguage, false);
       templateTags[tag.tag_type.name] ||= [];
       templateTags[tag.tag_type.name].push({id:tag.id, name: tag.name, value: print.tokens.name || tag.name})
     })
