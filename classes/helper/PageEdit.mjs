@@ -202,6 +202,8 @@ export default class HelperPageEdit{
         const original = HelperPageText.defaultOriginal();
         original.values[langauge] = {};
 
+        const blockPosts = [];
+
         Object.keys($_POST).sort().forEach(name => {
             //parse attributes
             const value = $_POST[name];
@@ -253,22 +255,24 @@ export default class HelperPageEdit{
                 }
             }
 
-            //parse blocks
+            //collect blocks
             m = name.match(/^#(\d+)([.@*][\w+\[\].@*|-]+)$/);
             if(m){
-                const post = {};
+                const key = parseInt(m[1]);
+                blockPosts[ key ] ||= {};
+                const post = blockPosts[ key ];
                 post[m[2]] = value;
-
-                original.blocks ||= [];
-                original.blocks[ parseInt( m[1]) ] ||= HelperPageText.defaultOriginal();
-
-                const block = original.blocks[ parseInt( m[1]) ];
-                original.blocks[ parseInt( m[1]) ] = this.mergeOriginals(
-                    block,
-                    this.postToOriginal(post, langauge)
-                );
             }
         });
+
+        //loop blockPosts and merge them into original.blocks
+        original.blocks ||= [];
+        blockPosts.forEach((post, index) => {
+            original.blocks[index] = this.mergeOriginals(
+              original.blocks[index] || HelperPageText.defaultOriginal(),
+              this.postToOriginal(post, langauge)
+            );
+        })
 
         return original;
     }
