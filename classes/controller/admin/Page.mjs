@@ -345,7 +345,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
       if(Array.isArray(page.print.tokens[token])){
         page.print.tokens[token].forEach((it, i) => {
           if(typeof it !== 'object')return;
-          it._weight = parseInt(it._weight)
+          it._weight = parseInt(it._weight || "0");
           it._key = i;
         });
       }
@@ -360,7 +360,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
           block.tokens[token].forEach((it, j) => {
             if(typeof it !== 'object')return; //do nothing for block fields;
             // block items
-            it._weight = parseInt(it._weight);
+            it._weight = parseInt(it._weight || "0");
             it._key = j
           });
         }

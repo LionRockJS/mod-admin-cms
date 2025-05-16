@@ -262,8 +262,12 @@ describe('page helper test', () => {
       ".todo[0].link__url":"https://www.example.com/details",
       ".todo[1]@price":"160",
       ".todo[1].body":"sha",
-      "#0@_type":"paragraph",
+      "#0@_weight":"4",
+      "#0@_type":"label",
       "#0@city":"block city",
+      "#1@_weight":"3",
+      "#1@_type":"paragraph",
+      "#1@city":"sg"
     }
 
     const print = HelperPageEdit.mergeOriginals(
@@ -301,7 +305,7 @@ describe('page helper test', () => {
           },
           blocks:[
             {
-              attributes:{_type: "paragraph", city:"block city"},
+              attributes:{_type: "paragraph", city:"block city",_weight:"0"},
               pointers:{},
               values: {
                 en:{}
@@ -309,7 +313,15 @@ describe('page helper test', () => {
               items: {}
             },
             {
-              attributes:{_type: "foo", value:"300"},
+              attributes:{_type: "paragraph", city:"hk",_weight:"1"},
+              pointers:{},
+              values: {
+                en:{}
+              },
+              items: {}
+            },
+            {
+              attributes:{_type: "foo", value:"300",_weight:"2"},
               pointers:{},
               values: {
                 en:{}
@@ -349,7 +361,7 @@ describe('page helper test', () => {
           },
           blocks:[
             {
-              attributes:{_type: "paragraph", city:"block city"},
+              attributes:{_type: "label", city:"block city",_weight:"4"},
               pointers:{},
               values: {
                 en:{}
@@ -357,7 +369,15 @@ describe('page helper test', () => {
               items: {}
             },
             {
-              attributes:{_type: "foo", value:"300"},
+              attributes:{_type: "paragraph", city:"sg",_weight:"3"},
+              pointers:{},
+              values: {
+                en:{}
+              },
+              items: {}
+            },
+            {
+              attributes:{_type: "foo", value:"300",_weight:"2"},
               pointers:{},
               values: {
                 en:{}
@@ -367,6 +387,522 @@ describe('page helper test', () => {
           ]
         })
     )
+  })
+
+  test('inputs to blocks items for existing original', ()=> {
+    const input = {
+      "@_type": "pages",
+      "@city":"hk",
+      ".name":"foo",
+      ".name|zh-hant":"髮",
+      ".body":"bar"
+    }
+
+    const print = HelperPageEdit.mergeOriginals(
+      {
+        "attributes": {
+          "logo": ""
+        },
+        "pointers": {},
+        "values": {
+          "en": {
+            "name": "Our Partners"
+          },
+          "zh-hans": {
+            "name": "合作伙伴"
+          }
+        },
+        "items": {},
+        "blocks": [
+          {
+            "attributes": {
+              "_type": "logos",
+              "_weight": "0",
+              "_name": ""
+            },
+            "pointers": {},
+            "values": {
+              "en": {
+                "label": "Fashion"
+              },
+              "zh-hans": {
+                "label": "时尚 "
+              }
+            },
+            "items": {
+              "pictures": [
+                {
+                  "attributes": {
+                    "_weight": "0",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Alexander McQueen "
+                    },
+                    "zh-hans": {
+                      "name": "亚历山大麦昆 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "1",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Bottega Veneta "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "葆蝶家 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "2",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Burberry "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "博柏利 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "3",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Chanel "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "香奈儿 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "4",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Dior "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "迪奥 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "5",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Dolce & Gabbana "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "杜嘉班纳 "
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "attributes": {
+              "_type": "logos",
+              "_weight": "1",
+              "_name": ""
+            },
+            "pointers": {},
+            "values": {
+              "en": {
+                "label": "Beauty"
+              },
+              "zh-hans": {
+                "label": "美妝 "
+              }
+            },
+            "items": {
+              "pictures": [
+                {
+                  "attributes": {
+                    "_weight": "0",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Charlotte Tilbury"
+                    },
+                    "-file": {},
+                    "zh-hans": {}
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "1",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Clinique"
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "倩碧 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "2",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Dior Beauty "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "迪奧 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "3",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Dior Parfum "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "迪奧香薰 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "4",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Estée Lauder "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "雅诗兰黛 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "5",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Fresh  "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "海蓝之谜 "
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+      ,
+      HelperPageEdit.postToOriginal(input, "en")
+    );
+
+    expect(JSON.stringify(print)).toBe(JSON.stringify(
+      {
+        "attributes": {
+          "logo": "",
+          "_type":"pages",
+          "city":"hk"
+        },
+        "pointers": {},
+        "values": {
+          "en": {
+            "name": "foo",
+            "body": "bar"
+          },
+          "zh-hans": {
+            "name": "合作伙伴"
+          },
+          "zh-hant":{
+            "name": "髮"
+          }
+        },
+        "items": {},
+        "blocks": [
+          {
+            "attributes": {
+              "_type": "logos",
+              "_weight": "0",
+              "_name": ""
+            },
+            "pointers": {},
+            "values": {
+              "en": {
+                "label": "Fashion"
+              },
+              "zh-hans": {
+                "label": "时尚 "
+              }
+            },
+            "items": {
+              "pictures": [
+                {
+                  "attributes": {
+                    "_weight": "0",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Alexander McQueen "
+                    },
+                    "zh-hans": {
+                      "name": "亚历山大麦昆 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "1",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Bottega Veneta "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "葆蝶家 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "2",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Burberry "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "博柏利 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "3",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Chanel "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "香奈儿 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "4",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Dior "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "迪奥 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "5",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Dolce & Gabbana "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "杜嘉班纳 "
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "attributes": {
+              "_type": "logos",
+              "_weight": "1",
+              "_name": ""
+            },
+            "pointers": {},
+            "values": {
+              "en": {
+                "label": "Beauty"
+              },
+              "zh-hans": {
+                "label": "美妝 "
+              }
+            },
+            "items": {
+              "pictures": [
+                {
+                  "attributes": {
+                    "_weight": "0",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Charlotte Tilbury"
+                    },
+                    "-file": {},
+                    "zh-hans": {}
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "1",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Clinique"
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "倩碧 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "2",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Dior Beauty "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "迪奧 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "3",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Dior Parfum "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "迪奧香薰 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "4",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Estée Lauder "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "雅诗兰黛 "
+                    }
+                  }
+                },
+                {
+                  "attributes": {
+                    "_weight": "5",
+                    "url": ""
+                  },
+                  "pointers": {},
+                  "values": {
+                    "en": {
+                      "name": "Fresh  "
+                    },
+                    "-file": {},
+                    "zh-hans": {
+                      "name": "海蓝之谜 "
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ))
   })
 
   test('merge originals', () =>{
