@@ -351,8 +351,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
       }
     })
 
-    console.log(JSON.stringify(page, null, 2));
-
     //assign block index as block key, block item index as block item key
     page.print.blocks.forEach((block, i) =>{
       block._weight = parseInt(block.tokens._weight);
