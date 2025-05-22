@@ -9,6 +9,8 @@ RouteList.add('/admin/pages/add-block-item/:page_id/:block_index/:item_name', 'c
 RouteList.add('/admin/pages/delete-block-item/:page_id/:block_index/:item_name/:index',    'controller/admin/Page', 'delete_block_item');
 
 RouteList.add('/admin/pages/un-publish/:id', 'controller/admin/Page', 'unpublish');
+RouteList.add('/admin/pages/trash/:page_type', 'controller/admin/Page', 'trash_list');
+RouteList.add('/admin/pages/restore/:id', 'controller/admin/Page', 'restore');
 
 RouteList.add('/admin/pages/list/:page_type', 'controller/admin/Page');
 RouteList.add('/admin/pages/import/:page_type', 'controller/admin/Page', 'import_post', 'POST');

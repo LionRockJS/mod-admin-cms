@@ -36,6 +36,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         ['draft_attribute', `${Central.config.cms.databasePath}/content_attribute.sqlite`],
         ['live', `${Central.config.cms.databasePath}/www/content.sqlite`],
         ['live_attribute', `${Central.config.cms.databasePath}/www/content_attribute.sqlite`],
+        ['trash', `${Central.config.cms.databasePath}/trash/content.sqlite`],
         ['tag', `${Central.config.cms.databasePath}/www/tag.sqlite`],
       ]),
       orderBy: new Map([[request.query.sort ?? 'weight', request.query.order ?? 'DESC'], ['created_at', 'DESC']]),
@@ -547,15 +548,46 @@ export default class ControllerAdminPage extends ControllerAdmin {
     await this.action_edit();
   }
 
+  async action_trash_list(){
+
+  }
+
+  async action_restore(){
+    const {id} = this.state.get(Controller.STATE_PARAMS);
+    const databases = this.state.get(ControllerMixinDatabase.DATABASES);
+    const dbTrash = databases.get('trash');
+    const dbDraft = databases.get('draft');
+
+    const trashPage = await ORM.factory(Page, id, {database:dbTrash});
+    if(!trashPage) throw new Error(`Page ${id} not found in trash`);
+
+    const restorePage = ORM.create(Page, {database: dbDraft, insertID: trashPage.id});
+    Object.assign(restorePage, trashPage);
+    delete restorePage.id;
+    await restorePage.write();
+
+    await trashPage.delete();
+
+    await this.redirect(`/admin/${this.controller_slug}/${page.id}`, true);
+  }
+
   async action_delete(){
     if(this.state.get(ControllerMixinORMDelete.DELETED)){
+      const databases = this.state.get(ControllerMixinDatabase.DATABASES);
       const checkpoint = this.state.get(Controller.STATE_CHECKPOINT);
 
       const page = this.state.get(ControllerMixinORMDelete.INSTANCE);
+
+      const dbTrash = databases.get('trash');
+      const trashPage = ORM.create(Page, {database: dbTrash, insertID: page.id});
+      Object.assign(trashPage, page);
+      trashPage.id = null;
+      await trashPage.write();
+
       await this.unpublish(page.id);
 
       //remove attribute
-      const dbAttribute = this.state.get(ControllerMixinDatabase.DATABASES).get('draft_attribute');
+      const dbAttribute = databases.get('draft_attribute');
       const PageModel = await ORM.import("page/" + capitalize(page.page_type), ORM);
       if(PageModel !== ORM){ // page attribute model exists,
         //delete all attributes by page_id
