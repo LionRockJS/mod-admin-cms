@@ -25,8 +25,8 @@ RouteList.add('/admin/tags/new_post', 'controller/admin/Tag', 'new_post', 'POST'
 RouteList.add('/admin/api', 'controller/admin/API');
 RouteList.add('/admin/api/pages/:type', 'controller/admin/API', 'pages');
 RouteList.add('/admin/api/tags/:type', 'controller/admin/API', 'tags');
-
 RouteList.add('/admin/api/page/:page_id/tag/:tag_id', 'controller/admin/API', 'add_page_tag', 'POST');
+RouteList.add('/admin/api/page/remove/page_tag/:id', 'controller/admin/API', 'delete_page_tag', 'DELETE');
 RouteList.add('/admin/api/page_tag/:id', 'controller/admin/API', 'delete_page_tag', 'DELETE');
 
 RouteList.add('/admin/upload', 'controller/admin/Upload', 'upload_post', 'POST');

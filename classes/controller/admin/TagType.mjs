@@ -12,6 +12,12 @@ export default class ControllerTagType extends ControllerAdmin{
       ]),
       database: 'tag',
       limit: 99999,
+      templates: new Map([
+        ['index', 'templates/admin/tag_types/index'],
+        ['create', 'templates/admin/tag_types/edit'],
+        ['edit', 'templates/admin/tag_types/edit'],
+        ['read', 'templates/admin/tag_types/edit'],
+      ]),
     });
   }
 
