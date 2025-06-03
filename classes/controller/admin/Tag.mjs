@@ -121,7 +121,6 @@ export default class ControllerAdminTag extends ControllerAdmin{
   }
 
   async action_update(){
-    const { id } = this.state.get(Controller.STATE_PARAMS);
     const instance = this.state.get('instance');
     if(!instance)return;
 
@@ -132,10 +131,8 @@ export default class ControllerAdminTag extends ControllerAdmin{
       original,
       HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE))
     )
-
-    const print = HelperPageText.originalToPrint(mergeOriginal, this.state.get(Controller.STATE_LANGUAGE), Central.config.cms.defaultLanguage);
+    
     instance.original = JSON.stringify(mergeOriginal);
-    instance.name = print.tokens.name;
     await instance.write();
 
     this.state.get(Controller.STATE_REQUEST).session.autosave = $_POST['autosave'];
