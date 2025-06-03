@@ -20,6 +20,7 @@ RouteList.add('/admin/pages/search/:page_type', 'controller/admin/Page', 'search
 HelperCRUD.add('pages', 'controller/admin/Page');
 HelperCRUD.add('tag_types', 'controller/admin/TagType');
 HelperCRUD.add('tags', 'controller/admin/Tag');
+RouteList.add('/admin/tags/new_post', 'controller/admin/Tag', 'new_post', 'POST');
 
 RouteList.add('/admin/api', 'controller/admin/API');
 RouteList.add('/admin/api/pages/:type', 'controller/admin/API', 'pages');

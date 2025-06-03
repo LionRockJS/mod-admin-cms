@@ -2,6 +2,7 @@ import { Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM 
 import { ControllerAdmin } from '@lionrockjs/mod-admin';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
 import {HelperPageText} from "@lionrockjs/mod-cms-read";
+import HelperPageEdit from "../../helper/PageEdit.mjs";
 
 import DefaultPageTag from '../../model/PageTag.mjs';
 import DefaultTag from '../../model/Tag.mjs';
@@ -15,8 +16,9 @@ export default class ControllerAdminTag extends ControllerAdmin{
   constructor(request){
     super(request, Tag, {
       databases: new Map([
-        ['draft', `${Central.config.cms.databasePath}/content.sqlite`],
         ['tag',   `${Central.config.cms.databasePath}/www/tag.sqlite`],
+        ['draft', `${Central.config.cms.databasePath}/content.sqlite`],//draft is used when deleting tags
+        ['live', `${Central.config.cms.databasePath}/www/content.sqlite`],
       ]),
       database: 'tag',
       limit: 99999,
@@ -42,7 +44,8 @@ export default class ControllerAdminTag extends ControllerAdmin{
       this.state.get(ControllerMixinView.TEMPLATE).data,
       {
         tag_types,
-        filter_tag_type: parseInt(filter_tag_type || 0)
+        filter_tag_type: parseInt(filter_tag_type || 0),
+        default_language: Central.config.cms.defaultLanguage,
       }
     );
   }
@@ -55,6 +58,7 @@ export default class ControllerAdminTag extends ControllerAdmin{
       this.state.get(ControllerMixinView.TEMPLATE).data,
       {
         tag_types,
+        default_language: Central.config.cms.defaultLanguage,
       }
     );
   }
@@ -83,6 +87,7 @@ export default class ControllerAdminTag extends ControllerAdmin{
     Object.assign(
       this.state.get(ControllerMixinView.TEMPLATE).data,
       {
+        default_language: Central.config.cms.defaultLanguage,
         item: instance,
         tokens,
         placeholders,
@@ -99,17 +104,38 @@ export default class ControllerAdminTag extends ControllerAdmin{
     );
   }
 
+  async action_new_post(){
+    const database = this.state.get(ControllerMixinDatabase.DATABASES).get('tag');
+    const $_POST = this.state.get(ControllerMixinMultipartForm.POST_DATA);
+    console.log(this.state.get(Controller.STATE_LANGUAGE));
+
+    const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
+    const tag = ORM.create(Tag, {database});
+    tag.name = $_POST['.name'];
+    tag.tag_type_id = parseInt($_POST[':tag_type_id']);
+    tag.original = JSON.stringify(postOriginal);
+
+    await tag.write();
+    const destination = $_POST.destination || `/admin/tags/${tag.id}`;
+    await this.redirect(destination, !$_POST.destination);
+  }
+
   async action_update(){
+    const { id } = this.state.get(Controller.STATE_PARAMS);
     const instance = this.state.get('instance');
     if(!instance)return;
 
     const $_POST = this.state.get(ControllerMixinMultipartForm.POST_DATA);
     const original = HelperPageText.getOriginal(instance);
-    //update original
-    Object.keys($_POST).forEach(name => {
-      HelperPageText.update(original, name, $_POST[name], this.state.get(Controller.STATE_LANGUAGE))
-    });
-    instance.original = JSON.stringify(original);
+
+    const mergeOriginal = HelperPageEdit.mergeOriginals(
+      original,
+      HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE))
+    )
+
+    const print = HelperPageText.originalToPrint(mergeOriginal, this.state.get(Controller.STATE_LANGUAGE), Central.config.cms.defaultLanguage);
+    instance.original = JSON.stringify(mergeOriginal);
+    instance.name = print.tokens.name;
     await instance.write();
 
     this.state.get(Controller.STATE_REQUEST).session.autosave = $_POST['autosave'];
@@ -120,10 +146,10 @@ export default class ControllerAdminTag extends ControllerAdmin{
 
   async action_delete(){
     if(this.state.get('deleted')){
-
       const { id } = this.state.get(Controller.STATE_PARAMS);
-      const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
-      await ORM.deleteBy(PageTag, 'tag_id', [id], {database});
+      const databases = this.state.get(ControllerMixinDatabase.DATABASES);
+      await ORM.deleteBy(PageTag, 'tag_id', [id], {database:databases.get('draft')});
+      await ORM.deleteBy(PageTag, 'tag_id', [id], {database:databases.get('live')})
     }
   }
 }
