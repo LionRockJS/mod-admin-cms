@@ -62,7 +62,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
   async action_index(){
     const page_type = this.page_type;
 
-    const instances = this.state.get('instances');
+    const instances = this.state.get('instances') || [];
 
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
     const livePages = await ORM.readBy(Page, 'page_type', [page_type], {database, asArray:true});
@@ -374,6 +374,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     templateData.blocks       = page.print.blocks;
     templateData.block_names  = Object.keys(Central.config.cms.blocks) || [];
     templateData.language     = this.state.get(Controller.STATE_LANGUAGE);
+    templateData.default_language = Central.config.cms.defaultLanguage || 'en';
     templateData.placeholders = placeholders;
 
     templateData.autosave     = this.state.get(Controller.STATE_REQUEST).session.autosave;
