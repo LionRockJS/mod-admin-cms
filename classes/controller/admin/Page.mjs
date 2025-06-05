@@ -167,11 +167,18 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const presave = instance.original;
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
 
+    //auto name
+    if(/(^|\s)(untitled|undefined|null)($|\s)/i.test($_POST[':name'])){
+      instance.name = $_POST['.name'] || $_POST['@name'] || `Page ${instance.id}`;
+    }
+
     //auto slug
-    if($_POST[':slug'] === String(instance.id)){
-      const slug = slugify($_POST[':name']).toLowerCase();
+    if($_POST[':slug'] === String(instance.id) || /(^|\s|-)(untitled|undefined|null)($|\s|-)/i.test($_POST[':slug'])){
+      const slug = slugify(instance.name || instance.id ).toLowerCase();
       const slugExist = await ORM.readBy(Page, 'slug', [slug], {database, asArray:false});
       instance.slug = slugExist ? (slug + instance.id) : slug;
+    }else{
+      instance.slug = slugify(instance.slug).toLowerCase();
     }
 
     const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
