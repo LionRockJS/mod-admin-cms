@@ -15,6 +15,7 @@ RouteList.add('/admin/pages/restore/:id', 'controller/admin/Page', 'restore');
 RouteList.add('/admin/pages/list/:page_type', 'controller/admin/Page');
 RouteList.add('/admin/pages/import/:page_type', 'controller/admin/Page', 'import_post', 'POST');
 RouteList.add('/admin/pages/create_by_type/:page_type', 'controller/admin/Page', 'create_by_type');
+RouteList.add('/admin/pages/new_post/:page_type', 'controller/admin/Page', 'new_post', 'POST');
 RouteList.add('/admin/pages/search/:page_type', 'controller/admin/Page', 'search');
 
 HelperCRUD.add('pages', 'controller/admin/Page');

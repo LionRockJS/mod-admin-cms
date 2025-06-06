@@ -107,7 +107,6 @@ export default class ControllerAdminTag extends ControllerAdmin{
   async action_new_post(){
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('tag');
     const $_POST = this.state.get(ControllerMixinMultipartForm.POST_DATA);
-    console.log(this.state.get(Controller.STATE_LANGUAGE));
 
     const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
     const tag = ORM.create(Tag, {database});

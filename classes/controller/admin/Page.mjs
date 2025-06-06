@@ -95,9 +95,20 @@ export default class ControllerAdminPage extends ControllerAdmin {
     page.page_type = page_type;
     page.slug = String(insertID);
     page.weight = weight + 1;
-    await page.write();
 
-    await this.redirect(`/admin/${this.controller_slug}/${page.id}`);
+    const defaultOriginal = HelperPageEdit.blueprint(page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en');
+
+    page.original = JSON.stringify(defaultOriginal);
+    page.print = HelperPageText.originalToPrint(defaultOriginal, this.state.get(Controller.STATE_LANGUAGE), Central.config.cms.defaultLanguage);
+    page.id = `new_post/${page_type}`;
+    this.state.set('instance', page);
+
+    await ControllerMixinAdminTemplates.action_edit(this.state);
+    await this.action_create()
+
+//    await page.write();
+
+//    await this.redirect(`/admin/${this.controller_slug}/${page.id}`);
   }
 
   async action_import_post(){
@@ -154,6 +165,20 @@ export default class ControllerAdminPage extends ControllerAdmin {
       await page.write();
     }));
 
+  }
+
+  async action_new_post(){
+    const { page_type } = this.state.get(Controller.STATE_PARAMS);
+    const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
+    const $_POST = this.state.get(ControllerMixinMultipartForm.POST_DATA);
+
+    const page = ORM.create(Page, {database});
+    page.page_type = page_type;
+    page.name = $_POST['.name'] || `Untitled ${page_type}`;
+    page.slug = slugify(page.name).toLowerCase();
+    await page.write();
+    this.state.set('instance', page);
+    await this.action_update();
   }
 
   async action_update() {
