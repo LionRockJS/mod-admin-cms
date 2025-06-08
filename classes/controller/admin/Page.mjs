@@ -666,11 +666,24 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     const original = HelperPageEdit.getOriginal(page);
     original.blocks ||=[];
+    
+    // Find highest weight among existing blocks
+    let highestWeight = -1;
+    for (const block of original.blocks) {
+      const weight = block.attributes?._weight !== undefined ? parseInt(block.attributes._weight) : 0;
+      if (weight > highestWeight) {
+        highestWeight = weight;
+      }
+    }
+    
+    // Set weight for the new block
+    defaultBlock.attributes = defaultBlock.attributes || {};
+    defaultBlock.attributes._weight = highestWeight + 1;
+    
     original.blocks.push(defaultBlock);
 
     page.original = JSON.stringify(original);
     await page.write();
-
   }
 
   async block_delete(page, blockIndex){
@@ -709,10 +722,22 @@ export default class ControllerAdminPage extends ControllerAdmin {
       //create first item
       original.items[itemName] = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en').items[itemName]
     }
+    
+    // Find highest weight among existing items
+    let highestWeight = -1;
+    for (const item of original.items[itemName]) {
+      const weight = item.attributes?._weight !== undefined ? parseInt(item.attributes._weight) : 0;
+      if (weight > highestWeight) {
+        highestWeight = weight;
+      }
+    }
 
     for(let i=0; i<count; i++){
       const item = JSON.parse(JSON.stringify(defaultItem));
-      item.attributes._weight = original.items[itemName].length;
+      // Set weight for the new item
+      item.attributes = item.attributes || {};
+      item.attributes._weight = highestWeight + 1;
+      highestWeight++; // Increment for the next item if adding multiple
       original.items[itemName].push(item);
     }
 
