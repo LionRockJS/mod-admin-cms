@@ -210,9 +210,10 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const tagTypeMap = new Map(tagTypes.map(it => [it.id, it.name]));
     const tags = await ORM.readBy(Tag, 'id', instance.page_tags.map(it => it.tag_id), {database: databaseTag, asArray:true });
 
-    original.tags = tags.map(tag => HelperPageEdit.getOriginal(tag, {_id: tag.id, _type_id: tag.tag_type_id, _type:tagTypeMap.get(tag.tag_type_id)}));
+    const mergedOriginal = HelperPageEdit.mergeOriginals(original, postOriginal);
+    mergedOriginal.tags = tags.map(tag => HelperPageEdit.getOriginal(tag, {_id: tag.id, _type_id: tag.tag_type_id, _type:tagTypeMap.get(tag.tag_type_id)}));
 
-    instance.original = JSON.stringify(HelperPageEdit.mergeOriginals(original, postOriginal));
+    instance.original = JSON.stringify(mergedOriginal);
     await instance.write();
 
     const {session} = this.state.get(Controller.STATE_REQUEST)

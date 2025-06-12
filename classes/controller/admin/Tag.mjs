@@ -1,6 +1,8 @@
 import { Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM } from '@lionrockjs/central';
 import { ControllerAdmin } from '@lionrockjs/mod-admin';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
+import { ControllerMixinORMRead } from '@lionrockjs/mixin-orm';
+
 import {HelperPageText} from "@lionrockjs/mod-cms-read";
 import HelperPageEdit from "../../helper/PageEdit.mjs";
 
@@ -32,6 +34,14 @@ export default class ControllerAdminTag extends ControllerAdmin{
     this.state.set(Controller.STATE_LANGUAGE, this.state.get(Controller.STATE_LANGUAGE) || Central.config.cms.defaultLanguage || 'en');
   }
 
+  async before(){
+    const {filter_tag_type} = this.state.get(ControllerMixinMultipartForm.GET_DATA);
+    if(filter_tag_type){
+      const filter = this.state.get(ControllerMixinORMRead.LIST_FILTER);
+      filter.push(['AND', 'tag_type_id', 'EQUAL', parseInt(filter_tag_type)])
+    }
+  }
+
   async action_index(){
     const {filter_tag_type} = this.state.get(ControllerMixinMultipartForm.GET_DATA);
 
@@ -40,9 +50,12 @@ export default class ControllerAdminTag extends ControllerAdmin{
     const tag_types = [];
     tag_type_records.forEach(it => tag_types[it.id] = it.name);
 
+    const filters = tag_type_records.map(it => ({id: it.id, name: it.name}));
+
     Object.assign(
       this.state.get(ControllerMixinView.TEMPLATE).data,
       {
+        filters,
         tag_types,
         filter_tag_type: parseInt(filter_tag_type || 0),
         default_language: Central.config.cms.defaultLanguage,
