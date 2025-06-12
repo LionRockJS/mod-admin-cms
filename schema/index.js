@@ -25,16 +25,3 @@ build(
   'tag',
   'www',
 );
-
-build(
-  __dirname,
-  'page',
-  'content_attribute',
-)
-
-build(
-  __dirname,
-  'page',
-  'content_attribute',
-  'www'
-)

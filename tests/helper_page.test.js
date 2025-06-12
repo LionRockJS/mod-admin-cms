@@ -142,9 +142,9 @@ describe('page helper test', () => {
             parent:"111222"
           },
           values:{
-            en:{name: "foo", body: "bar", link__label : "click me", link__url : "https://www.example.com"},
-            "zh-hant":{name:"髮"},
-            "zh-hans":{name:""}
+            en:{body: "bar", link__label : "click me", link__url : "https://www.example.com", name: "foo"},
+            "zh-hans":{name:""},
+            "zh-hant":{name:"髮"}
           },
           items:{
             todo:[
@@ -968,7 +968,8 @@ describe('page helper test', () => {
             values:{}
           }
         ]
-      }
+      },
+      blocks:[]
     }))
   })
 

@@ -272,6 +272,7 @@ export default class HelperPageEdit{
               original.blocks[index] || HelperPageText.defaultOriginal(),
               this.postToOriginal(post, langauge)
             );
+            delete original.blocks[index].blocks; //blocks should not be nested
         })
 
         return original;

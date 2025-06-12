@@ -33,9 +33,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
       roles: new Set(['admin', 'staff']),
       databases: new Map([
         ['draft', `${Central.config.cms.databasePath}/content.sqlite`],
-        ['draft_attribute', `${Central.config.cms.databasePath}/content_attribute.sqlite`],
         ['live', `${Central.config.cms.databasePath}/www/content.sqlite`],
-        ['live_attribute', `${Central.config.cms.databasePath}/www/content_attribute.sqlite`],
         ['trash', `${Central.config.cms.databasePath}/trash/content.sqlite`],
         ['tag', `${Central.config.cms.databasePath}/www/tag.sqlite`],
       ]),
@@ -221,18 +219,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
     instance.original = JSON.stringify(HelperPageEdit.mergeOriginals(original, postOriginal));
     await instance.write();
 
-    const dbAttribute = this.state.get(ControllerMixinDatabase.DATABASES).get('draft_attribute');
-    const PageModel = await ORM.import("page/" + capitalize(instance.page_type), ORM);
-    if(PageModel !== ORM){ // page attribute model exists,
-      //delete all attributes by page_id
-      await ORM.deleteBy(PageModel, 'id', [instance.id], {database: dbAttribute});
-
-      //write all attributes with page_id
-      const attr = ORM.create(PageModel, {database: dbAttribute, insertID: instance.id});
-      Object.assign(attr, original.attributes);
-      await attr.write();
-    }
-
     const {session} = this.state.get(Controller.STATE_REQUEST)
     session.autosave = $_POST['autosave'];
 
@@ -311,13 +297,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const existPages = await ORM.readBy(Page, 'id', [id], {database, asArray:true});
     if(existPages.length > 0){
       await Promise.all(existPages.map(async it => it.delete()));
-      //remove live attributes
-      const dbAttribute = this.state.get(ControllerMixinDatabase.DATABASES).get('live_attribute');
-      const PageModel = await ORM.import("page/" + capitalize(existPages[0].page_type), ORM);
-      if(PageModel !== ORM){ // page attribute model exists,
-        //delete all attributes by page_id
-        await ORM.deleteBy(PageModel, 'id', [id], {database: dbAttribute});
-      }
     }
   }
 
@@ -351,17 +330,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
       livePageTag.weight = page.weight;
       livePageTag.write();
     }));
-
-    //copy attributes
-    const dbAttribute = this.state.get(ControllerMixinDatabase.DATABASES).get('live_attribute');
-    const PageModel = await ORM.import("page/" + capitalize(page.page_type), ORM);
-    if(PageModel !== ORM){ // page attribute model exists,
-      //write all attributes with page_id
-      const attr = ORM.create(PageModel, {database: dbAttribute, insertID: page.id});
-      const original = HelperPageEdit.getOriginal(page);
-      Object.assign(attr, original.attributes);
-      await attr.write();
-    }
   }
 
   async action_unpublish(){
@@ -618,14 +586,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
       await trashPage.write();
 
       await this.unpublish(page.id);
-
-      //remove attribute
-      const dbAttribute = databases.get('draft_attribute');
-      const PageModel = await ORM.import("page/" + capitalize(page.page_type), ORM);
-      if(PageModel !== ORM){ // page attribute model exists,
-        //delete all attributes by page_id
-        await ORM.deleteBy(PageModel, 'id', [page.id], {database: dbAttribute});
-      }
 
       //redirect to page type index
       if(checkpoint){
