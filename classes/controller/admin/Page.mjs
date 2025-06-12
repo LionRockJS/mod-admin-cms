@@ -103,10 +103,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     await ControllerMixinAdminTemplates.action_edit(this.state);
     await this.action_create()
-
-//    await page.write();
-
-//    await this.redirect(`/admin/${this.controller_slug}/${page.id}`);
   }
 
   async action_import_post(){
@@ -201,7 +197,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
       const slugExist = await ORM.readBy(Page, 'slug', [slug], {database, asArray:false});
       instance.slug = slugExist ? (slug + instance.id) : slug;
     }else{
-      instance.slug = slugify(instance.slug).toLowerCase();
+      instance.slug = slugify(instance.slug).toLowerCase().trim();
     }
 
     const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
