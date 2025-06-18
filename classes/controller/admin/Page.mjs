@@ -162,13 +162,12 @@ export default class ControllerAdminPage extends ControllerAdmin {
   }
 
   async action_new_post(){
-    const { page_type } = this.state.get(Controller.STATE_PARAMS);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
     const $_POST = this.state.get(ControllerMixinMultipartForm.POST_DATA);
 
     const page = ORM.create(Page, {database});
-    page.page_type = page_type;
-    page.name = $_POST['.name'] || `Untitled ${page_type}`;
+    page.page_type = this.page_type;
+    page.name = $_POST['.name'] || `Untitled ${this.page_type}`;
     page.slug = slugify(page.name).toLowerCase();
     await page.write();
     this.state.set('instance', page);
