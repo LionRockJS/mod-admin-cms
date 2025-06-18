@@ -94,8 +94,8 @@ export default class ControllerAdminTag extends ControllerAdmin{
     }
 
     const original = HelperPageText.getOriginal(instance);
-    const tokens = HelperPageText.originalToPrint(original, this.state.get(Controller.STATE_LANGUAGE)).tokens;
-    const placeholders = HelperPageText.originalToPrint(original, Central.config.cms.defaultLanguage).tokens;
+    const tokens = HelperPageText.originalToPrint(original, this.state.get(Controller.STATE_LANGUAGE), Central.config.cms.defaultLanguage).tokens;
+    const placeholders = HelperPageText.originalToPrint(original, Central.config.cms.defaultLanguage, Central.config.cms.defaultLanguage).tokens;
 
     Object.assign(
       this.state.get(ControllerMixinView.TEMPLATE).data,
@@ -145,12 +145,8 @@ export default class ControllerAdminTag extends ControllerAdmin{
     )
     
     instance.original = JSON.stringify(mergeOriginal);
+    instance.name = mergeOriginal.values[Central.config.cms.defaultLanguage]['name'];
     await instance.write();
-
-    this.state.get(Controller.STATE_REQUEST).session.autosave = $_POST['autosave'];
-
-    const destination = $_POST.destination || `/admin/tags/${instance.id}`;
-    await this.redirect(destination, !$_POST.destination);
   }
 
   async action_delete(){
