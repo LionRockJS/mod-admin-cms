@@ -14,6 +14,8 @@ const PageTag = await ORM.import('PageTag', DefaultPageTag);
 const Tag = await ORM.import('Tag', DefaultTag);
 const TagType = await ORM.import('TagType', DefaultTagType);
 
+import slugify from 'slugify';
+
 export default class ControllerAdminTag extends ControllerAdmin{
   constructor(request){
     super(request, Tag, {
@@ -123,7 +125,7 @@ export default class ControllerAdminTag extends ControllerAdmin{
 
     const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
     const tag = ORM.create(Tag, {database});
-    tag.name = $_POST['.name'];
+    tag.name = slugify($_POST['.name']).toLowerCase();
     tag.tag_type_id = parseInt($_POST[':tag_type_id']);
     tag.original = JSON.stringify(postOriginal);
 
@@ -145,7 +147,8 @@ export default class ControllerAdminTag extends ControllerAdmin{
     )
     
     instance.original = JSON.stringify(mergeOriginal);
-    instance.name = mergeOriginal.values[Central.config.cms.defaultLanguage]['name'];
+    instance.name = slugify(mergeOriginal.values[Central.config.cms.defaultLanguage]['name']).toLowerCase();
+
     await instance.write();
   }
 
