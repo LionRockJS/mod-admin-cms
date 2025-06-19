@@ -235,7 +235,25 @@ export default class ControllerAdminPage extends ControllerAdmin {
         }
       }
     }
+    if(!postOriginal.blocks)return false; //no blocks in postOriginal, no diff
 
+    const originalBlocks = original.blocks || [];
+    if(postOriginal.blocks.length !== originalBlocks.length){
+      Central.log(`Blocks length changed from ${originalBlocks.length} to ${postOriginal.blocks.length}`);
+      return true;
+    }
+
+    for(let i=0; i < postOriginal.blocks.length; i++){
+      if(!originalBlocks[i]){
+        Central.log(`Block at index ${i} not found in original blocks`);
+        return true;
+      }
+
+      if(this.isPostOriginalDiff(postOriginal.blocks[i], originalBlocks[i], action)){
+        Central.log(`Block at index ${i} changed`);
+        return true;
+      }
+    }
     return false;
   }
 
