@@ -3,7 +3,7 @@ type TagTypes implements IName{
 }
 
 type Tags implements IName{
-    name:String! @unique
+    name:String!
     original: String
 
     belongsTo: TagTypes

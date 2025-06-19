@@ -174,15 +174,104 @@ export default class ControllerAdminPage extends ControllerAdmin {
     await this.action_update();
   }
 
+  isPostOriginalDiff(postOriginal, original, action){
+    if(action === "block-delete" || action === "block-item-delete" || action === "item-delete") {
+      Central.log(`action: ${action}, always save version`);
+      return true;
+    }
+
+    //loop postOriginal, if different from original, save a version.
+    for(const key in postOriginal.attributes){
+      if(postOriginal.attributes[key] !== original.attributes[key]){
+        if(key === "_weight"){
+          const postWeight = parseInt(postOriginal.attributes[key]);
+          const originalWeight = parseInt(original.attributes[key]);
+          if(postWeight === originalWeight)continue;
+        }
+
+        Central.log(`Attribute ${key} changed from ${original.attributes[key]} to ${postOriginal.attributes[key]}`);
+        return true;
+      }
+    }
+
+    for(const key in postOriginal.pointers){
+      if(postOriginal.pointers[key] !== original.pointers[key]){
+        Central.log(`Pointer ${key} changed from ${original.pointers[key]} to ${postOriginal.pointers[key]}`);
+        return true;
+      }
+    }
+
+    for(const lang in postOriginal.values){
+       if(original.values[lang] === undefined){
+         Central.log(`Language ${lang} not found in original values`);
+          return true;
+       }
+       for(const key in postOriginal.values[lang]){
+          if(postOriginal.values[lang][key] !== original.values[lang][key]){
+            Central.log(`Value ${key} in language ${lang} changed from ${original.values[lang][key]} to ${postOriginal.values[lang][key]}`);
+            return true;
+          }
+       }
+    }
+
+    for(const itemName in postOriginal.items){
+      const originalItems = original.items[itemName];
+      const postOriginalItems = postOriginal.items[itemName];
+
+      if(!originalItems) {
+        Central.log(`Item ${itemName} not found in original items`);
+        return true;
+      }
+
+      if(postOriginalItems.length !== originalItems.length){
+        Central.log(`Item ${itemName} length changed from ${originalItems.length} to ${postOriginalItems.length}`);
+        return true;
+      }
+
+      for(let i=0; i < postOriginalItems.length; i++){
+        if(this.isPostOriginalDiff(postOriginalItems[i], originalItems[i], action)){
+          Central.log(`Item ${itemName} at index ${i} changed`);
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  async saveVersion(postOriginal, original, id, slug, action){
+    if(!this.isPostOriginalDiff(postOriginal, original, action)) return;
+
+    const targetFile = `${Central.config.cms.versionPath}/${id}/${Math.floor(Date.now()/1000)}.json`;
+    const targetDirectory = path.dirname(targetFile);
+    //create folder if not exist
+    try{
+      await stat(targetDirectory)
+    }catch(err){
+      if(err.code === 'ENOENT'){
+        await mkdir(targetDirectory, {recursive: true});
+      }else{
+        throw err;
+      }
+    }
+
+    fs.writeFileSync(targetFile, JSON.stringify({...original, attributes: {_slug: slug}}, null, 2));
+  }
+
   async action_update() {
     const $_POST = this.state.get(ControllerMixinMultipartForm.POST_DATA);
+    const action = $_POST['action'] || "";
+    const actions = action.split(':');
+    const actionType = actions[0];
+    const actionParam = actions[1] ?? "";
+    const actionParams = actionParam.split('|');
+    const count = parseInt($_POST['count:'+actionParam] || "1");
 
-    if($_POST.action === 'publish_weights')await this.publish_weights();
+    if(action === 'publish_weights')await this.publish_weights();
 
     //if no param id, create page proxy
     const instance = this.state.get('instance');
     if(!instance)return;
-    const presave = instance.original;
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
 
     //auto name
@@ -202,6 +291,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
     const original = HelperPageEdit.getOriginal(instance);
 
+    await this.saveVersion(postOriginal, original, instance.id, instance.slug, actionType);
+
     //collect tags and write to original
     await instance.eagerLoad({with:['PageTag']}, {database});
     const databaseTag = this.state.get(ControllerMixinDatabase.DATABASES).get('tag');
@@ -215,18 +306,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
     instance.original = JSON.stringify(mergedOriginal);
     await instance.write();
 
-    const {session} = this.state.get(Controller.STATE_REQUEST)
-    session.autosave = $_POST['autosave'];
-
     //page start and end should sync with live version
     await this.updateLiveSchedule(instance);
-
-    const action = $_POST['action'] || "";
-    const actions = action.split(':');
-    const actionType = actions[0];
-    const actionParam = actions[1] ?? "";
-    const actionParams = actionParam.split('|');
-    const count = parseInt($_POST['count:'+actionParam] || "1");
 
     switch (actionType){
       case "publish":
@@ -253,24 +334,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
       case "item-delete":
         await this.item_delete(instance, actionParams[0], actionParams[1]);
         break;
-    }
-
-    //save original to json with version path
-    if(JSON.stringify(original) !== presave){
-      const targetFile = `${Central.config.cms.versionPath}/${instance.id}/${Math.floor(Date.now()/1000)}.json`;
-      const targetDirectory = path.dirname(targetFile);
-      //create folder if not exist
-      try{
-        await stat(targetDirectory)
-      }catch(err){
-        if(err.code === 'ENOENT'){
-          await mkdir(targetDirectory, {recursive: true});
-        }else{
-          throw err;
-        }
-      }
-
-      fs.writeFileSync(targetFile, JSON.stringify({...original, attributes: {_slug: instance.slug}}, null, 2));
     }
 
     const destination = $_POST.destination || `/admin/${this.controller_slug}/${instance.id}`;
@@ -373,7 +436,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
     templateData.default_language = Central.config.cms.defaultLanguage || 'en';
     templateData.placeholders = placeholders;
 
-    templateData.autosave     = this.state.get(Controller.STATE_REQUEST).session.autosave;
     templateData.published    = !!livePage;
     templateData.sync         = page.original === livePage?.original && page.slug === livePage.slug;
     templateData.page_type    = page.page_type;
