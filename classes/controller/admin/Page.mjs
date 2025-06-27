@@ -273,7 +273,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
       }
     }
 
-    fs.writeFileSync(targetFile, JSON.stringify({...original, attributes: {_slug: slug}}, null, 2));
+    original.attributes._slug = slug;
+    fs.writeFileSync(targetFile, JSON.stringify({...original}, null, 2));
   }
 
   async action_update() {
@@ -307,6 +308,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
     }
 
     const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
+    // modified_by is always current user
+    postOriginal.attributes._modified_by = this.state.get(Controller.STATE_REQUEST).session?.user_meta?.full_name ?? '';
     const original = HelperPageEdit.getOriginal(instance);
 
     await this.saveVersion(postOriginal, original, instance.id, instance.slug, actionType);
