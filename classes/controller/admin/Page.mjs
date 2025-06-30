@@ -63,7 +63,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const instances = this.state.get('instances') || [];
 
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
-    const livePages = await ORM.readBy(Page, 'page_type', [page_type], {database, asArray:true});
+    const livePages = await ORM.readBy(Page, 'id', [instances.map(it => it.id)], {database, asArray:true});
     const livePageMap = new Map(livePages.map(page => [page.id, page]));
 
     const items = instances.filter(it => it.page_type === page_type);
@@ -183,6 +183,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     //loop postOriginal, if different from original, save a version.
     for(const key in postOriginal.attributes){
       if(postOriginal.attributes[key] !== original.attributes[key]){
+        if(key === "_modified_by")continue; //modified_by is not post by user, so skip it
         if(key === "_weight"){
           const postWeight = parseInt(postOriginal.attributes[key]);
           const originalWeight = parseInt(original.attributes[key]);
