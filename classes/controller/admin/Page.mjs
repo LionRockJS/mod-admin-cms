@@ -358,7 +358,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
         break;
     }
 
-    const destination = $_POST.destination || `/admin/${this.controller_slug}/${instance.id}`;
+    const { cp } = state.get(Controller.STATE_QUERY);
+    const destination = $_POST.destination || cp || `/admin/${this.controller_slug}/${instance.id}`;
     await this.redirect(destination, !$_POST.destination);
   }
 
@@ -611,7 +612,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const pageTagSet = new Set(page.page_tags.map(it => it.id));
 
     const templateTags = {}
-    const tags = await ORM.readAll(Tag, {database:tagDatabase, asArray:true});
+    const orderBy = new Map([['name', 'ASC']]);
+    const tags = await ORM.readAll(Tag, {database:tagDatabase, asArray:true, orderBy});
     await ORM.eagerLoad(tags, {with:['TagType']}, {database:tagDatabase});
 
     tags.forEach(tag => {
