@@ -326,6 +326,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const databaseTag = this.state.get(ControllerMixinDatabase.DATABASES).get('tag');
     const tagTypes = await ORM.readAll(TagType, {database:databaseTag, asArray:true});
     const tagTypeMap = new Map(tagTypes.map(it => [it.id, it.name]));
+    instance.page_tags = instance.page_tags || [];
     const tags = await ORM.readBy(Tag, 'id', instance.page_tags.map(it => it.tag_id), {database: databaseTag, asArray:true });
 
     const mergedOriginal = HelperPageEdit.mergeOriginals(original, postOriginal);
@@ -408,6 +409,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     //copy page tags
     await page.eagerLoad({with:['PageTag']});
+    page.page_tags = page.page_tags || [];
+
     await Promise.all(page.page_tags.map(async it => {
       const livePageTag = ORM.create(PageTag, {database, insertID: it.id});
       const fields = {...it};
@@ -581,7 +584,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const language = this.state.get(Controller.STATE_LANGUAGE);
 
     const page = this.state.get('instance');
-    const livePage = await ORM.readBy(Page, 'id', [page.id], {database: liveDatabase, limit:1, asArray:false});
+    const Model = this.state.get(ControllerMixinORMRead.MODEL);
+    const livePage = await ORM.readBy(Model, 'id', [page.id], {database: liveDatabase, limit:1, asArray:false});
 
     //if querystring have version, original use version from file
 
@@ -600,6 +604,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     /** parse tags across database **/
     await page.eagerLoad({ with:['PageTag'] }, {database});
+    page.page_tags = page.page_tags || [];
+
     await Promise.all(
         page.page_tags.map(async page_tag => {
           page_tag.tag = await ORM.factory(Tag, page_tag.tag_id, {database: tagDatabase});
