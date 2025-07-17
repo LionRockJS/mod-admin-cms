@@ -3,7 +3,13 @@ import path from "node:path";
 import fs from 'node:fs';
 import {stat, mkdir} from 'node:fs/promises';
 
-import {ControllerAdmin, ControllerMixinAdminTemplates, ControllerMixinImport} from '@lionrockjs/mod-admin';
+import {
+  ControllerAdmin,
+  ControllerMixinAdminTemplates,
+  ControllerMixinCRUDRedirect,
+  ControllerMixinImport
+} from '@lionrockjs/mod-admin';
+
 import {Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM, Model} from '@lionrockjs/central';
 import {ControllerMixinORMDelete, ControllerMixinORMRead} from '@lionrockjs/mixin-orm';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
@@ -106,7 +112,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
   }
 
   async action_import_post(){
-    await this.redirect(`/admin/${this.controller_slug}/list/${this.page_type}`);
+    this.state.set(ControllerMixinCRUDRedirect.REDIRECT, this.state.get(ControllerMixinCRUDRedirect.REDIRECT) || `/admin/${this.controller_slug}/list/${this.page_type}`);
   }
 
   async action_search(){
@@ -358,9 +364,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         break;
     }
 
-    const { cp } = state.get(Controller.STATE_QUERY);
-    const destination = $_POST.destination || cp || `/admin/${this.controller_slug}/${instance.id}`;
-    await this.redirect(destination, !$_POST.destination);
+    this.state.set(ControllerMixinCRUDRedirect.REDIRECT, this.state.get(ControllerMixinCRUDRedirect.REDIRECT) || `/admin/${this.controller_slug}/edit/${instance.id}`);
   }
 
   async updateLiveSchedule(instance){
@@ -417,7 +421,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
   async action_unpublish(){
     const {id} = this.state.get(Controller.STATE_PARAMS)
     await this.unpublish(id);
-    await this.redirect(`/admin/${this.controller_slug}/${id}`, true);
+    this.state.set(
+      ControllerMixinCRUDRedirect.REDIRECT,
+      this.state.get(ControllerMixinCRUDRedirect.REDIRECT) || `/admin/${this.controller_slug}/${id}`);
   }
 
   setEditTemplate(page, livePage=null, placeholders = {}, tags={}){
@@ -651,7 +657,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     await trashPage.delete();
 
-    await this.redirect(`/admin/${this.controller_slug}/${page.id}`, true);
+    this.state.set(
+      ControllerMixinCRUDRedirect.REDIRECT,
+      this.state.get(ControllerMixinCRUDRedirect.REDIRECT) || `/admin/${this.controller_slug}/${page.id}`);
   }
 
   async action_delete(){
@@ -669,12 +677,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
       await this.unpublish(page.id);
 
-      //redirect to page type index
-      if(checkpoint){
-        await this.redirect(checkpoint, false);
-      }else{
-        await this.redirect(`/admin/pages/list/${page.page_type}`, true);
-      }
+      this.state.set(ControllerMixinCRUDRedirect.REDIRECT,
+        this.state.get(ControllerMixinCRUDRedirect.REDIRECT) || `/admin/pages/list/${page.page_type}`
+      );
     }
   }
 
@@ -685,6 +690,11 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const page = await ORM.factory(Page, pageId, {database});
     if(!page) throw new Error(`Page ${pageId} not found`);
     await this.item_add(page, itemName);
+
+    this.state.set(ControllerMixinCRUDRedirect.REDIRECT,
+      this.state.get(ControllerMixinCRUDRedirect.REDIRECT) || `/admin/pages/list/${page.page_type}`
+    );
+
     await this.redirect(`/admin/pages/${page.id}`, true);
   }
 
