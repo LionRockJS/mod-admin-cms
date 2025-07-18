@@ -31,6 +31,9 @@ const TagType = await ORM.import('TagType', DefaultTagType);
 const capitalize = val => String(val).charAt(0).toUpperCase() + String(val).slice(1);
 
 export default class ControllerAdminPage extends ControllerAdmin {
+  static STATE_ORIGINAL_SNAPSHOT = "page_original_snapshot";
+  static STATE_POST_ORIGINAL = "page_post_original";
+
   page_type = 'default';
   controller_slug = 'pages';
 
@@ -305,19 +308,24 @@ export default class ControllerAdminPage extends ControllerAdmin {
       instance.name = $_POST['.name'] || $_POST['@name'] || `Page ${instance.id}`;
     }
 
-    //auto slug
-    if($_POST[':slug'] === String(instance.id) || /(^|\s|-)(untitled|undefined|null)($|\s|-)/i.test($_POST[':slug'])){
-      const slug = slugify(instance.name || instance.id ).toLowerCase();
-      const slugExist = await ORM.readBy(Page, 'slug', [slug], {database, asArray:false});
-      instance.slug = slugExist ? (slug + instance.id) : slug;
-    }else{
-      instance.slug = slugify(instance.slug).toLowerCase().trim();
+    const Model = this.state.get(ControllerMixinORMRead.MODEL);
+    if(Model.fields.get('slug')){
+      //auto slug
+      if($_POST[':slug'] === String(instance.id) || /(^|\s|-)(untitled|undefined|null)($|\s|-)/i.test($_POST[':slug'])){
+        const slug = slugify(instance.name || instance.id ).toLowerCase();
+        const slugExist = await ORM.readBy(Model, 'slug', [slug], {database, asArray:false});
+        instance.slug = slugExist ? (slug + instance.id) : slug;
+      }else{
+        instance.slug = slugify(instance.slug).toLowerCase().trim();
+      }
     }
 
     const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
     // modified_by is always current user
     postOriginal.attributes._modified_by = this.state.get(Controller.STATE_REQUEST).session?.user_meta?.full_name ?? '';
     const original = HelperPageEdit.getOriginal(instance);
+    this.state.set(ControllerAdminPage.STATE_ORIGINAL_SNAPSHOT, HelperPageEdit.getOriginal(instance));
+    this.state.set(ControllerAdminPage.STATE_POST_ORIGINAL, postOriginal);
 
     await this.saveVersion(postOriginal, original, instance.id, instance.slug, actionType);
 
@@ -369,8 +377,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
   }
 
   async updateLiveSchedule(instance){
+    const Model = this.state.get(ControllerMixinORMRead.MODEL);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
-    const livePage = await ORM.readBy(Page, 'id', [instance.id], {database, limit: 1, asArray: false});
+    const livePage = await ORM.readBy(Model, 'id', [instance.id], {database, limit: 1, asArray: false});
     if(!livePage)return;
     if(livePage.start === instance.start && livePage.end === instance.end)return;
 
@@ -380,21 +389,24 @@ export default class ControllerAdminPage extends ControllerAdmin {
   }
 
   async unpublish(id){
+    const Model = this.state.get(ControllerMixinORMRead.MODEL);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
-    const existPages = await ORM.readBy(Page, 'id', [id], {database, asArray:true});
+    const existPages = await ORM.readBy(Model, 'id', [id], {database, asArray:true});
     if(existPages.length > 0){
       await Promise.all(existPages.map(async it => it.delete()));
     }
   }
 
   async revert(page){
+    const Model = this.state.get(ControllerMixinORMRead.MODEL);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
-    const version = await ORM.factory(Page, page.id, {database});
+    const version = await ORM.factory(Model, page.id, {database});
     page.original = version.original;
     await page.write();
   }
 
   async publish(page){
+    const Model = this.state.get(ControllerMixinORMRead.MODEL);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
 
     //live database always keep minimal content
@@ -402,7 +414,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     await this.unpublish(page.id, database);
 
     //create live page with page.id
-    const livePage = ORM.create(Page, {database, insertID: page.id});
+    const livePage = ORM.create(Model, {database, insertID: page.id});
     Object.assign(livePage, page);
     delete livePage.id;
     await livePage.write();
@@ -524,6 +536,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
   }
 
   static async resolvePointer(state, original){
+    const Model = this.state.get(ControllerMixinORMRead.MODEL);
     const database = state.get(ControllerMixinDatabase.DATABASES).get('draft');
     const prints = new Map();
 
@@ -532,7 +545,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
       if(!pageId) continue;
       let print = prints.get(pageId);
       if(!print){
-        const page = await ORM.factory(Page, pageId, {database, asArray:false});
+        const page = await ORM.factory(Model, pageId, {database, asArray:false});
         const original = HelperPageEdit.getOriginal(page);
         original.items = {};
         original.blocks = [];
@@ -556,7 +569,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
           if(!pageId) continue;
           let print = prints.get(pageId);
           if(!print){
-            const page = await ORM.factory(Page, pageId, {database, asArray:false});
+            const page = await ORM.factory(Model, pageId, {database, asArray:false});
             const original = HelperPageEdit.getOriginal(page);
             original.items = {};
             original.blocks = [];
@@ -648,15 +661,16 @@ export default class ControllerAdminPage extends ControllerAdmin {
   }
 
   async action_restore(){
+    const Model = this.state.get(ControllerMixinORMRead.MODEL);
     const {id} = this.state.get(Controller.STATE_PARAMS);
     const databases = this.state.get(ControllerMixinDatabase.DATABASES);
     const dbTrash = databases.get('trash');
     const dbDraft = databases.get('draft');
 
-    const trashPage = await ORM.factory(Page, id, {database:dbTrash});
+    const trashPage = await ORM.factory(Model, id, {database:dbTrash});
     if(!trashPage) throw new Error(`Page ${id} not found in trash`);
 
-    const restorePage = ORM.create(Page, {database: dbDraft, insertID: trashPage.id});
+    const restorePage = ORM.create(Model, {database: dbDraft, insertID: trashPage.id});
     Object.assign(restorePage, trashPage);
     delete restorePage.id;
     await restorePage.write();
@@ -670,13 +684,12 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
   async action_delete(){
     if(this.state.get(ControllerMixinORMDelete.DELETED)){
+      const Model = this.state.get(ControllerMixinORMRead.MODEL);
       const databases = this.state.get(ControllerMixinDatabase.DATABASES);
-      const checkpoint = this.state.get(Controller.STATE_CHECKPOINT);
-
       const page = this.state.get(ControllerMixinORMDelete.INSTANCE);
 
       const dbTrash = databases.get('trash');
-      const trashPage = ORM.create(Page, {database: dbTrash, insertID: page.id});
+      const trashPage = ORM.create(Model, {database: dbTrash, insertID: page.id});
       Object.assign(trashPage, page);
       trashPage.id = null;
       await trashPage.write();
@@ -692,8 +705,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
   async action_add_item(){
     const {page_id:pageId, item_name:itemName} = this.state.get(Controller.STATE_PARAMS);
 
+    const Model = this.state.get(ControllerMixinORMRead.MODEL);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
-    const page = await ORM.factory(Page, pageId, {database});
+    const page = await ORM.factory(Model, pageId, {database});
     if(!page) throw new Error(`Page ${pageId} not found`);
     await this.item_add(page, itemName);
 
@@ -706,8 +720,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
   async action_delete_item(){
     const {page_id:pageId, item_name:itemName, index:itemIndex} = this.state.get(Controller.STATE_PARAMS);
+    const Model = this.state.get(ControllerMixinORMRead.MODEL);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
-    const page = await ORM.factory(Page, pageId, {database});
+    const page = await ORM.factory(Model, pageId, {database});
 
     await this.item_delete(page, itemName, itemIndex);
     await this.redirect(`/admin/pages/${page.id}`, true);
@@ -812,8 +827,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
   async action_add_block(){
     const {page_id:pageId, block_name:blockName} = this.state.get(Controller.STATE_PARAMS);
+    const Model = this.state.get(ControllerMixinORMRead.MODEL);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
-    const page = await ORM.factory(Page, pageId, {database});
+    const page = await ORM.factory(Model, pageId, {database});
     if(!page) throw new Error(`Page ${pageId} not found`);
 
     await this.block_add(page, blockName);
@@ -823,9 +839,10 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
   async action_delete_block(){
     const {page_id:pageId, index:blockIndex} = this.state.get(Controller.STATE_PARAMS);
+    const Model = this.state.get(ControllerMixinORMRead.MODEL);
 
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
-    const page = await ORM.factory(Page, pageId, {database});
+    const page = await ORM.factory(Model, pageId, {database});
     if(!page) throw new Error(`Page ${pageId} not found`);
 
     await this.block_delete(page, blockIndex);
@@ -834,17 +851,20 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
   async action_add_block_item(){
     const {page_id: pageId, block_index: blockIndex, item_name: itemName } = this.state.get(Controller.STATE_PARAMS);
+    const Model = this.state.get(ControllerMixinORMRead.MODEL);
 
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
-    const page = await ORM.factory(Page, pageId, {database});
+    const page = await ORM.factory(Model, pageId, {database});
     await this.block_item_add(page, blockIndex, itemName);
     await this.redirect(`/admin/${this.controller_slug}/${pageId}`, true);
   }
 
   async action_delete_block_item(){
     const {page_id: pageId, block_index: blockIndex, item_name: itemName, index:itemIndex } = this.state.get(Controller.STATE_PARAMS);
+    const Model = this.state.get(ControllerMixinORMRead.MODEL);
+
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
-    const page = await ORM.factory(Page, pageId, {database});
+    const page = await ORM.factory(Model, pageId, {database});
     await this.block_item_delete(page, blockIndex, itemName, itemIndex);
 
     await this.redirect(`/admin/${this.controller_slug}/${pageId}`, true);
