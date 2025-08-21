@@ -185,7 +185,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
   isPostOriginalDiff(postOriginal, original, action){
     if(action === "block-delete" || action === "block-item-delete" || action === "item-delete") {
-      Central.log(`action: ${action}, always save version`);
+//      Central.log(`action: ${action}, always save version`);
       return true;
     }
 
@@ -199,26 +199,26 @@ export default class ControllerAdminPage extends ControllerAdmin {
           if(postWeight === originalWeight)continue;
         }
 
-        Central.log(`Attribute ${key} changed from ${original.attributes[key]} to ${postOriginal.attributes[key]}`);
+//        Central.log(`Attribute ${key} changed from ${original.attributes[key]} to ${postOriginal.attributes[key]}`);
         return true;
       }
     }
 
     for(const key in postOriginal.pointers){
       if(postOriginal.pointers[key] !== original.pointers[key]){
-        Central.log(`Pointer ${key} changed from ${original.pointers[key]} to ${postOriginal.pointers[key]}`);
+//        Central.log(`Pointer ${key} changed from ${original.pointers[key]} to ${postOriginal.pointers[key]}`);
         return true;
       }
     }
 
     for(const lang in postOriginal.values){
        if(original.values[lang] === undefined){
-         Central.log(`Language ${lang} not found in original values`);
+//         Central.log(`Language ${lang} not found in original values`);
           return true;
        }
        for(const key in postOriginal.values[lang]){
           if(postOriginal.values[lang][key] !== original.values[lang][key]){
-            Central.log(`Value ${key} in language ${lang} changed from ${original.values[lang][key]} to ${postOriginal.values[lang][key]}`);
+//            Central.log(`Value ${key} in language ${lang} changed from ${original.values[lang][key]} to ${postOriginal.values[lang][key]}`);
             return true;
           }
        }
@@ -229,18 +229,18 @@ export default class ControllerAdminPage extends ControllerAdmin {
       const postOriginalItems = postOriginal.items[itemName];
 
       if(!originalItems) {
-        Central.log(`Item ${itemName} not found in original items`);
+//        Central.log(`Item ${itemName} not found in original items`);
         return true;
       }
 
       if(postOriginalItems.length !== originalItems.length){
-        Central.log(`Item ${itemName} length changed from ${originalItems.length} to ${postOriginalItems.length}`);
+//        Central.log(`Item ${itemName} length changed from ${originalItems.length} to ${postOriginalItems.length}`);
         return true;
       }
 
       for(let i=0; i < postOriginalItems.length; i++){
         if(this.isPostOriginalDiff(postOriginalItems[i], originalItems[i], action)){
-          Central.log(`Item ${itemName} at index ${i} changed`);
+//          Central.log(`Item ${itemName} at index ${i} changed`);
           return true;
         }
       }
@@ -249,18 +249,18 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     const originalBlocks = original.blocks || [];
     if(postOriginal.blocks.length !== originalBlocks.length){
-      Central.log(`Blocks length changed from ${originalBlocks.length} to ${postOriginal.blocks.length}`);
+//      Central.log(`Blocks length changed from ${originalBlocks.length} to ${postOriginal.blocks.length}`);
       return true;
     }
 
     for(let i=0; i < postOriginal.blocks.length; i++){
       if(!originalBlocks[i]){
-        Central.log(`Block at index ${i} not found in original blocks`);
+//        Central.log(`Block at index ${i} not found in original blocks`);
         return true;
       }
 
       if(this.isPostOriginalDiff(postOriginal.blocks[i], originalBlocks[i], action)){
-        Central.log(`Block at index ${i} changed`);
+//        Central.log(`Block at index ${i} changed`);
         return true;
       }
     }
