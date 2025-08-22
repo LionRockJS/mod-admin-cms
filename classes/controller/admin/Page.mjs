@@ -72,7 +72,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const instances = this.state.get('instances') || [];
 
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
-    const livePages = await ORM.readBy(Page, 'id', [instances.map(it => it.id)], {database, asArray:true});
+    const livePages = await ORM.readBy(Page, 'id', instances.map(it => it.id), {database, asArray:true});
     const livePageMap = new Map(livePages.map(page => [page.id, page]));
 
     const items = instances.filter(it => it.page_type === page_type);
