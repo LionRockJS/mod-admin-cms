@@ -751,6 +751,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     
     // Set weight for the new block
     defaultBlock.attributes = defaultBlock.attributes || {};
+    defaultBlock.attributes._id = `${Date.now().toString(36)}`;
     defaultBlock.attributes._weight = highestWeight + 1;
     
     original.blocks.push(defaultBlock);
