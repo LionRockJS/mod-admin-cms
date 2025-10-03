@@ -56,7 +56,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
       ...options,
     });
 
-    this.state.get(Controller.STATE_HEADERS)['Access-Control-Allow-Origin']  = '*';
     this.state.set(Controller.STATE_LANGUAGE, this.state.get(Controller.STATE_LANGUAGE) || Central.config.cms.defaultLanguage || 'en');
 
     this.page_type = this.state.get(Controller.STATE_PARAMS).page_type || this.options.page_type;
