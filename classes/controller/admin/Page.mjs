@@ -55,7 +55,6 @@ export default class ControllerAdminPage extends ControllerAdmin {
       controller_slug: 'pages',
       ...options,
     });
-
     this.state.set(Controller.STATE_LANGUAGE, this.state.get(Controller.STATE_LANGUAGE) || Central.config.cms.defaultLanguage || 'en');
 
     this.page_type = this.state.get(Controller.STATE_PARAMS).page_type || this.options.page_type;
