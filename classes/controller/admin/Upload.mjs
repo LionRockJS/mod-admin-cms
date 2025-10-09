@@ -20,7 +20,7 @@ export default class ControllerAdminUpload extends Controller{
     super(request);
 
     this.state.set(ControllerMixinLoginRequire.REJECT_LANDING, '/login');
-    this.state.set(ControllerMixinLoginRequire.ALLOW_ROLES, new Set(['admin', 'staff', 'moderator']));
+    this.state.set(ControllerMixinLoginRequire.ALLOW_ROLES, new Set(Central.config.cms.uploadRoles));
 
     const headers = this.state.get(Controller.STATE_HEADERS);
     headers['Content-Type'] = 'application/json';
