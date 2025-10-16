@@ -126,19 +126,37 @@ export default class HelperPageEdit{
         blueprint.forEach(it => {
             if(typeof it === 'object'){
                 Object.keys(it).forEach(key => {
-                    const rawAttributes = it[key].filter(it => /^@/.test(it));
-                    const rawPointers = it[key].filter(it => /^\*/.test(it));
-                    const rawFields = it[key].filter(it => /^[^@*]/.test(it));
+                    const rawAttributes = it[key].filter(it => typeof it === 'string' && /^@/.test(it));
+                    const rawPointers = it[key].filter(it => typeof it === 'string' && /^\*/.test(it));
+                    const rawFields = it[key].filter(it => typeof it === 'string' && /^[^@*]/.test(it));
+                    const nestedItems = it[key].filter(it => typeof it === 'object');
 
                     const attributes = rawAttributes.map(it => this.getProps(it, '@'));
                     const pointers = rawPointers.map(it => this.getPointerProps(it));
                     const fields = rawFields.map(it => this.getProps(it));
+                    
+                    const nestedItemsProps = [];
+                    nestedItems.forEach(nestedItem => {
+                        Object.keys(nestedItem).forEach(nestedKey => {
+                            const nestedRawAttributes = nestedItem[nestedKey].filter(it => typeof it === 'string' && /^@/.test(it));
+                            const nestedRawPointers = nestedItem[nestedKey].filter(it => typeof it === 'string' && /^\*/.test(it));
+                            const nestedRawFields = nestedItem[nestedKey].filter(it => typeof it === 'string' && /^[^@*]/.test(it));
+
+                            nestedItemsProps.push({
+                                name: nestedKey,
+                                attributes: nestedRawAttributes.map(it => this.getProps(it, '@')),
+                                pointers: nestedRawPointers.map(it => this.getPointerProps(it)),
+                                fields: nestedRawFields.map(it => this.getProps(it)),
+                            });
+                        });
+                    });
 
                     items.push({
                         name: key,
                         attributes: attributes,
                         pointers: pointers,
                         fields: fields,
+                        items: nestedItemsProps.length > 0 ? nestedItemsProps : undefined,
                     });
                 });
             }else if(/^@/.test(it)){
@@ -182,9 +200,10 @@ export default class HelperPageEdit{
 
         items.forEach(item =>{
             const key = Object.keys(item)[0];
-            const itemAttributes = item[key].filter(it=>/^@/.test(it)).map(it => it.substring(1).split(":")[0]);
-            const itemPointers   = item[key].filter(it=>/^\*/.test(it)).map(it => it.substring(1).split(":")[0]);
-            const itemValues     = item[key].filter(it => /^[^@*]/.test(it)).map(it => it.split(":")[0]);
+            const itemAttributes = item[key].filter(it=> typeof it === 'string' && /^@/.test(it)).map(it => it.substring(1).split(":")[0]);
+            const itemPointers   = item[key].filter(it=> typeof it === 'string' && /^\*/.test(it)).map(it => it.substring(1).split(":")[0]);
+            const itemValues     = item[key].filter(it => typeof it === 'string' && /^[^@*]/.test(it)).map(it => it.split(":")[0]);
+            const nestedItems    = item[key].filter(it => typeof it === 'object');
 
             const defaultItem = HelperPageText.defaultOriginalItem();
             defaultItem.attributes._weight = 0;
@@ -192,6 +211,25 @@ export default class HelperPageEdit{
             Object.assign(defaultItem.attributes, this.definitionInstance(itemAttributes));
             Object.assign(defaultItem.pointers, this.definitionInstance(itemPointers));
             defaultItem.values[defaultLanguage] = this.definitionInstance(itemValues);
+            
+            // Handle nested items recursively
+            nestedItems.forEach(nestedItem => {
+                const nestedKey = Object.keys(nestedItem)[0];
+                const nestedItemAttributes = nestedItem[nestedKey].filter(it=> typeof it === 'string' && /^@/.test(it)).map(it => it.substring(1).split(":")[0]);
+                const nestedItemPointers   = nestedItem[nestedKey].filter(it=> typeof it === 'string' && /^\*/.test(it)).map(it => it.substring(1).split(":")[0]);
+                const nestedItemValues     = nestedItem[nestedKey].filter(it => typeof it === 'string' && /^[^@*]/.test(it)).map(it => it.split(":")[0]);
+                
+                const nestedDefaultItem = HelperPageText.defaultOriginalItem();
+                nestedDefaultItem.attributes._weight = 0;
+                
+                Object.assign(nestedDefaultItem.attributes, this.definitionInstance(nestedItemAttributes));
+                Object.assign(nestedDefaultItem.pointers, this.definitionInstance(nestedItemPointers));
+                nestedDefaultItem.values[defaultLanguage] = this.definitionInstance(nestedItemValues);
+                
+                defaultItem.items = defaultItem.items || {};
+                defaultItem.items[nestedKey] = [nestedDefaultItem];
+            });
+            
             original.items[key] = [defaultItem];
         })
 
@@ -230,7 +268,38 @@ export default class HelperPageEdit{
                 return;
             }
 
-            //parse items
+            //parse items (including nested items)
+            // First try nested items pattern: .items[0].nested_items[1]@attribute or .items[0].nested_items[1].field
+            m = name.match(/^\.(\w+)\[(\d+)\]\.(\w+)\[(\d+)\](@(\w+)$|\.(\w+)\|?([a-z-]+)?$|\*(\w+)$)/);
+            if(m){
+                original.items[ m[1] ] ||= [];
+                original.items[ m[1] ][ parseInt(m[2]) ] ||= HelperPageText.defaultOriginalItem();
+                
+                const parentItem = original.items[ m[1] ][ parseInt(m[2]) ];
+                parentItem.items ||= {};
+                parentItem.items[ m[3] ] ||= [];
+                parentItem.items[ m[3] ][ parseInt(m[4]) ] ||= HelperPageText.defaultOriginalItem();
+                
+                const nestedItem = parentItem.items[ m[3] ][ parseInt(m[4]) ];
+                
+                if(m[6]){
+                    nestedItem.attributes[ m[6] ] = value;
+                    return;
+                }
+                
+                if(m[7]){
+                    nestedItem.values[ m[8] || langauge ] ||= {};
+                    nestedItem.values[ m[8] || langauge ][ m[7] ] = value;
+                    return;
+                }
+                
+                if(m[9]){
+                    nestedItem.pointers[ m[9] ] = value;
+                    return;
+                }
+            }
+
+            // Then try regular items pattern: .items[0]@attribute or .items[0].field
             m = name.match(/^\.(\w+)\[(\d+)\](@(\w+)$|\.(\w+)\|?([a-z-]+)?$|\*(\w+)$)/);
             if(m){
                 original.items[ m[1] ] ||= [];
