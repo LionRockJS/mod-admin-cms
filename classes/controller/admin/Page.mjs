@@ -449,6 +449,19 @@ export default class ControllerAdminPage extends ControllerAdmin {
           if(typeof it !== 'object')return;
           it._weight = parseInt(it._weight || "0");
           it._key = i;
+          
+          // Handle nested items within items - assign _key
+          if(it.items && typeof it.items === 'object'){
+            Object.keys(it.items).forEach(nestedItemKey => {
+              if(Array.isArray(it.items[nestedItemKey])){
+                it.items[nestedItemKey].forEach((nestedItem, j) => {
+                  if(typeof nestedItem !== 'object')return;
+                  nestedItem._weight = parseInt(nestedItem._weight || "0");
+                  nestedItem._key = j;
+                });
+              }
+            });
+          }
         });
       }
     })
@@ -463,7 +476,20 @@ export default class ControllerAdminPage extends ControllerAdmin {
             if(typeof it !== 'object')return; //do nothing for block fields;
             // block items
             it._weight = parseInt(it._weight || "0");
-            it._key = j
+            it._key = j;
+            
+            // Handle nested items within block items - assign _key
+            if(it.items && typeof it.items === 'object'){
+              Object.keys(it.items).forEach(nestedItemKey => {
+                if(Array.isArray(it.items[nestedItemKey])){
+                  it.items[nestedItemKey].forEach((nestedItem, k) => {
+                    if(typeof nestedItem !== 'object')return;
+                    nestedItem._weight = parseInt(nestedItem._weight || "0");
+                    nestedItem._key = k;
+                  });
+                }
+              });
+            }
           });
         }
       })
@@ -786,31 +812,82 @@ export default class ControllerAdminPage extends ControllerAdmin {
   }
 
   async item_add(page, itemName, count=1){
-    const defaultOriginal = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en');
-    const defaultItem = defaultOriginal.items[itemName][0];
     const original = HelperPageEdit.getOriginal(page);
-
-    if(!original.items[itemName]){
-      //create first item
-      original.items[itemName] = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en').items[itemName]
-    }
     
-    // Find highest weight among existing items
-    let highestWeight = -1;
-    for (const item of original.items[itemName]) {
-      const weight = item.attributes?._weight !== undefined ? parseInt(item.attributes._weight) : 0;
-      if (weight > highestWeight) {
-        highestWeight = weight;
+    // Check if this is a nested item pattern: parentItem[index].nestedItem
+    const nestedMatch = itemName.match(/^(\w+)\[(\d+)\]\.(\w+)$/);
+    
+    if(nestedMatch){
+      // Handle nested items
+      const parentItemName = nestedMatch[1];
+      const parentIndex = parseInt(nestedMatch[2]);
+      const nestedItemName = nestedMatch[3];
+      
+      // Get the default nested item from blueprint
+      const defaultOriginal = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en');
+      const parentItems = defaultOriginal.items[parentItemName];
+      if(!parentItems || !parentItems[0] || !parentItems[0].items || !parentItems[0].items[nestedItemName]){
+        throw new Error(`Nested item ${nestedItemName} not found in blueprint for ${parentItemName}`);
       }
-    }
+      const defaultNestedItem = parentItems[0].items[nestedItemName][0];
+      
+      // Ensure parent item exists
+      if(!original.items[parentItemName] || !original.items[parentItemName][parentIndex]){
+        throw new Error(`Parent item ${parentItemName}[${parentIndex}] not found`);
+      }
+      
+      const parentItem = original.items[parentItemName][parentIndex];
+      parentItem.items = parentItem.items || {};
+      parentItem.items[nestedItemName] = parentItem.items[nestedItemName] || [];
+      
+      // Find highest weight among existing nested items
+      let highestWeight = -1;
+      for (const item of parentItem.items[nestedItemName]) {
+        const weight = item.attributes?._weight !== undefined ? parseInt(item.attributes._weight) : 0;
+        if (weight > highestWeight) {
+          highestWeight = weight;
+        }
+      }
+      
+      // Add new nested items
+      for(let i=0; i<count; i++){
+        const item = JSON.parse(JSON.stringify(defaultNestedItem));
+        item.attributes = item.attributes || {};
+        item.attributes._weight = highestWeight + 1;
+        highestWeight++;
+        parentItem.items[nestedItemName].push(item);
+      }
+    } else {
+      // Handle regular items
+      const defaultOriginal = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en');
+      const defaultItem = defaultOriginal.items[itemName]?.[0];
+      
+      if(!defaultItem){
+        throw new Error(`Item ${itemName} not found in blueprint`);
+      }
 
-    for(let i=0; i<count; i++){
-      const item = JSON.parse(JSON.stringify(defaultItem));
-      // Set weight for the new item
-      item.attributes = item.attributes || {};
-      item.attributes._weight = highestWeight + 1;
-      highestWeight++; // Increment for the next item if adding multiple
-      original.items[itemName].push(item);
+      if(!original.items[itemName]){
+        //create first item
+        original.items[itemName] = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en').items[itemName]
+      }
+      
+      // Find highest weight among existing items
+      let highestWeight = -1;
+      for (const item of original.items[itemName]) {
+        const weight = item.attributes?._weight !== undefined ? parseInt(item.attributes._weight) : 0;
+        if (weight > highestWeight) {
+          highestWeight = weight;
+        }
+      }
+
+      for(let i=0; i<count; i++){
+        const item = JSON.parse(JSON.stringify(defaultItem));
+        // Set weight for the new item
+        item.attributes = item.attributes || {};
+        item.attributes._weight = highestWeight + 1;
+        highestWeight++; // Increment for the next item if adding multiple
+        original.items[itemName].push(item);
+      }
     }
 
     page.original = JSON.stringify(original);
@@ -819,7 +896,31 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
   async item_delete(page, itemName, itemIndex){
     const original = JSON.parse(page.original);
-    original.items[itemName].splice(itemIndex, 1);
+    
+    // Check if this is a nested item pattern: parentItem[index].nestedItem
+    const nestedMatch = itemName.match(/^(\w+)\[(\d+)\]\.(\w+)$/);
+    
+    if(nestedMatch){
+      // Handle nested items
+      const parentItemName = nestedMatch[1];
+      const parentIndex = parseInt(nestedMatch[2]);
+      const nestedItemName = nestedMatch[3];
+      
+      if(!original.items[parentItemName] || !original.items[parentItemName][parentIndex]){
+        throw new Error(`Parent item ${parentItemName}[${parentIndex}] not found`);
+      }
+      
+      const parentItem = original.items[parentItemName][parentIndex];
+      if(!parentItem.items || !parentItem.items[nestedItemName]){
+        throw new Error(`Nested item ${nestedItemName} not found in ${parentItemName}[${parentIndex}]`);
+      }
+      
+      parentItem.items[nestedItemName].splice(parseInt(itemIndex), 1);
+    } else {
+      // Handle regular items
+      original.items[itemName].splice(itemIndex, 1);
+    }
+    
     page.original = JSON.stringify(original);
     await page.write();
   }
