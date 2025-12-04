@@ -20,9 +20,9 @@ export default class ControllerAdminTag extends ControllerAdmin{
   constructor(request){
     super(request, Tag, {
       databases: new Map([
-        ['tag',   `${Central.config.cms.databasePath}/www/tag.sqlite`],
-        ['draft', `${Central.config.cms.databasePath}/content.sqlite`],//draft is used when deleting tags
-        ['live', `${Central.config.cms.databasePath}/www/content.sqlite`],
+        ['tag', Central.config.cms.databaseMap.get('tag')],
+        ['draft', Central.config.cms.databaseMap.get('draft')],//draft is used when deleting tags
+        ['live', Central.config.cms.databaseMap.get('live')],
       ]),
       database: 'tag',
       limit: 99999,

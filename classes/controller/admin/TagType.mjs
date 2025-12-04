@@ -8,7 +8,7 @@ export default class ControllerTagType extends ControllerAdmin{
   constructor(request){
     super(request, TagType, {
       databases: new Map([
-        ['tag',   `${Central.config.cms.databasePath}/www/tag.sqlite`],
+        ['tag', Central.config.cms.databaseMap.get('tag')],        
       ]),
       database: 'tag',
       limit: 99999,
