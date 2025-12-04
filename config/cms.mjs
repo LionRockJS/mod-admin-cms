@@ -8,7 +8,7 @@ export default {
     ['live', `${Central.APP_PATH}/../database/www/content.sqlite`],
     ['trash', `${Central.APP_PATH}/../database/trash/content.sqlite`],
     ['tag', `${Central.APP_PATH}/../database/www/tag.sqlite`],
-  ]),  
+  ]),
   versionPath: `${Central.APP_PATH}/../database/versions`,
   defaultLanguage: 'en',
   languages: ['en', 'zh-hant'],
