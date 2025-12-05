@@ -15,8 +15,8 @@ export default class ControllerAPI extends ControllerAdmin{
     super(request, Page, {
       roles: new Set(['admin', 'staff']),
       databases: new Map([
-        ['draft', `${Central.config.cms.databasePath}/content.sqlite`],
-        ['tag', `${Central.config.cms.databasePath}/www/tag.sqlite`],
+        ['draft', Central.config.cms.databaseMap.get('draft')],
+        ['tag', Central.config.cms.databaseMap.get('tag')],
       ]),
       database: 'draft',
     });

@@ -3,7 +3,12 @@ export default {
   uploadRoles: ['admin', 'staff', 'moderator'],
   timezone: '+0800',
   landing: '',
-  databasePath: `${Central.APP_PATH}/../database`,
+  databaseMap: new Map([
+    ['draft', `${Central.APP_PATH}/../database/content.sqlite`],
+    ['live', `${Central.APP_PATH}/../database/www/content.sqlite`],
+    ['trash', `${Central.APP_PATH}/../database/trash/content.sqlite`],
+    ['tag', `${Central.APP_PATH}/../database/www/tag.sqlite`],
+  ]),
   versionPath: `${Central.APP_PATH}/../database/versions`,
   defaultLanguage: 'en',
   languages: ['en', 'zh-hant'],

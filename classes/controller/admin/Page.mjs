@@ -41,10 +41,10 @@ export default class ControllerAdminPage extends ControllerAdmin {
     super(request, Page, {
       roles: new Set(['admin', 'staff']),
       databases: new Map([
-        ['draft', `${Central.config.cms.databasePath}/content.sqlite`],
-        ['live', `${Central.config.cms.databasePath}/www/content.sqlite`],
-        ['trash', `${Central.config.cms.databasePath}/trash/content.sqlite`],
-        ['tag', `${Central.config.cms.databasePath}/www/tag.sqlite`],
+        ['draft', Central.config.cms.databaseMap.get('draft')],
+        ['live', Central.config.cms.databaseMap.get('live')],
+        ['trash', Central.config.cms.databaseMap.get('trash')],
+        ['tag', Central.config.cms.databaseMap.get('tag')],
       ]),
       orderBy: new Map([[request.query.sort ?? 'weight', request.query.order ?? 'DESC'], ['created_at', 'DESC']]),
       database: 'draft',
