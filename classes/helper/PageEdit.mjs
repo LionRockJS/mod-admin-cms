@@ -391,7 +391,7 @@ export default class HelperPageEdit{
 
         if(!page.original)return HelperPageText.defaultOriginal();
 
-        const original = JSON.parse(page.original);
+        const original = typeof page.original === 'object' ? page.original : JSON.parse(page.original);
         Object.assign(original.attributes, attributes);
 
         return original;
