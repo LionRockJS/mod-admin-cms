@@ -645,10 +645,14 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     await Promise.all(
         page.page_tags.map(async page_tag => {
-          page_tag.tag = await ORM.factory(Tag, page_tag.tag_id, {database: tagDatabase});
-          await page_tag.tag.eagerLoad({with:['TagType']}, {database:tagDatabase});
+          try{
+            page_tag.tag = await ORM.factory(Tag, page_tag.tag_id, {database: tagDatabase});
+            await page_tag.tag.eagerLoad({with:['TagType']}, {database:tagDatabase});
+          }catch(e){}
         })
     )
+
+    page.page_tags = page.page_tags.filter(it  => it.tag);
 
     page.tags = {};
     page.page_tags.forEach(page_tag => {
