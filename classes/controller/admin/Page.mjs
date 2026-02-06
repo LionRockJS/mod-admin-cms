@@ -1,7 +1,7 @@
 import pluralize from 'pluralize';
 import path from "node:path";
 import fs from 'node:fs';
-import {stat, mkdir} from 'node:fs/promises';
+import {stat, mkdir, readFile, readdir} from 'node:fs/promises';
 
 import {
   ControllerAdmin,
@@ -625,6 +625,16 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const livePage = await ORM.readBy(Model, 'id', [page.id], {database: liveDatabase, limit:1, asArray:false});
 
     //if querystring have version, original use version from file
+    const version = this.state.get(Controller.STATE_QUERY).version;
+    if(version) {
+      const versionPath = `${Central.config.cms.versionPath}/${page.id}/${version}.json`;
+      page.original = await readFile(versionPath, 'utf8');
+    }
+
+    let versions = [];
+    try{
+      versions = await readdir(`${Central.config.cms.versionPath}/${page.id}`);
+    }catch(e){}
 
     const original = HelperPageEdit.getOriginal(page, {}, this.state);
     const defaultOriginal = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage);
@@ -678,6 +688,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
     })
     /** end parse tag **/
     this.setEditTemplate(page, livePage, placeholders, templateTags);
+
+    const templateData = this.state.get(ControllerMixinView.TEMPLATE).data;
+    templateData.versions = versions;
   }
 
   async action_read(){
