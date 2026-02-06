@@ -1,6 +1,6 @@
 import {HelperPageText} from "@lionrockjs/mod-cms-read";
 import fs from "node:fs";
-import {Controller} from "@lionrockjs/mvc";
+import {Central, Controller} from "@lionrockjs/central";
 
 /**
  * Private helper class containing merge utility methods
