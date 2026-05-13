@@ -1,6 +1,6 @@
 import { HelperPageText } from "@lionrockjs/mod-cms-read";
 import fs from "node:fs";
-import { Central, Controller } from "@lionrockjs/central";
+import { Central, ControllerState } from "@lionrockjs/central";
 /**
  * Private helper class containing merge utility methods
  * @private
@@ -307,11 +307,11 @@ export default class HelperPageEdit {
         return result;
     }
     static getOriginal(page, attributes = {}, state = new Map()) {
-        const version = state.get(Controller.STATE_QUERY)?.version;
+        const version = state.get(ControllerState.QUERY)?.version;
         if (version) {
             const versionFile = `${Central.config.cms.versionPath}/${page.id}/${version}.json`;
             if (fs.existsSync(versionFile)) {
-                return JSON.parse(fs.readFileSync(versionFile));
+                return JSON.parse(fs.readFileSync(versionFile).toString());
             }
             else {
                 throw new Error(`Version ${version} not found`);

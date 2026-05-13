@@ -1,3 +1,4 @@
+// @ts-ignore
 import HelperExcelParser from "../helper/ExcelParser.mjs";
 import {Central, ORM} from "@lionrockjs/central";
 import {HelperPageText} from "@lionrockjs/mod-cms-read";
@@ -125,7 +126,7 @@ export default class HelperImporter {
     // Shared method: Validate file and find duplicates
     static async validateFile(file, database,
         uniqueDigestHandler = (item, digest) =>{},
-        findExistingRecord = async (item, database) => {},
+        findExistingRecord: (item: any, database: any) => Promise<any> = async (item, database) => {},
         configImporter = {attributes:[],values: {},items:[], tags:[]},
     ) {
         const {headers, objects} = await HelperExcelParser.parseExcelToObjects(file);

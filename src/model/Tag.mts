@@ -13,11 +13,11 @@ export default class Tag extends Model{
     ["name", "String!"],
     ["original", "String"]
   ]);
-  static belongsTo = new Map([
+  static belongsTo: Map<string, string> = new Map([
     ["tag_type_id", "TagType"],
     ["parent_tag", "Tag"]
   ]);
-  static hasMany = [
+  static hasMany: [string, string][] = [
     ["parent_tag", "Tag"]
   ];
 }

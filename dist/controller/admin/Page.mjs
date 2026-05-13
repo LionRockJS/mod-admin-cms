@@ -3,7 +3,7 @@ import path from "node:path";
 import fs from 'node:fs';
 import { stat, mkdir, readFile, readdir } from 'node:fs/promises';
 import { ControllerAdmin, ControllerMixinAdminTemplates, ControllerMixinCRUDRedirect, ControllerMixinImport } from '@lionrockjs/mod-admin';
-import { ControllerMixinDatabase, ControllerMixinView, Central, ORM, Model, ControllerState } from '@lionrockjs/central';
+import { ControllerMixinDatabase, ControllerMixinView, ControllerMixinViewState, Central, ORM, Model, ControllerState } from '@lionrockjs/central';
 import { ControllerMixinORMDelete, ControllerMixinORMRead } from '@lionrockjs/mixin-orm';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
 import { HelperPageText } from "@lionrockjs/mod-cms-read";
@@ -62,7 +62,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
                 page.synced = page.original === livePage.original && page.slug === livePage.slug;
             }
         });
-        Object.assign(this.state.get(ControllerMixinView.TEMPLATE).data, { items, page_type });
+        Object.assign(this.state.get(ControllerMixinViewState.TEMPLATE).data, { items, page_type });
     }
     async action_create_by_type() {
         const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
@@ -344,7 +344,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         const database = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
         //live database always keep minimal content
         //check page exist, remove it.
-        await this.unpublish(page.id, database);
+        await this.unpublish(page.id);
         //create live page with page.id
         const livePage = ORM.create(Model, { database, insertID: page.id });
         Object.assign(livePage, page);
@@ -423,7 +423,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
                 }
             });
         });
-        const templateData = this.state.get(ControllerMixinView.TEMPLATE).data;
+        const templateData = this.state.get(ControllerMixinViewState.TEMPLATE).data;
         templateData.tokens = page.print.tokens;
         templateData.blocks = page.print.blocks;
         templateData.block_names = Object.keys(Central.config.cms.blocks) || [];
@@ -477,7 +477,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         return false;
     }
     static async resolvePointer(state, original) {
-        const Model = this.state.get(ControllerMixinORMRead.MODEL);
+        const Model = state.get(ControllerMixinORMRead.MODEL);
         const database = state.get(ControllerMixinDatabase.DATABASES).get('draft');
         const prints = new Map();
         for (let key in original.pointers) {
@@ -572,7 +572,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         const templateTags = {};
         const orderBy = new Map([['name', 'ASC']]);
         const tags = await ORM.readAll(Tag, { database: tagDatabase, asArray: true, orderBy });
-        await ORM.eagerLoad(tags, { with: ['TagType'] }, { database: tagDatabase });
+        await ORM.eagerLoad(tags, { with: ['TagType'], database: tagDatabase });
         tags.forEach(tag => {
             if (pageTagSet.has(tag.id))
                 return;
@@ -582,7 +582,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         });
         /** end parse tag **/
         this.setEditTemplate(page, livePage, placeholders, templateTags);
-        const templateData = this.state.get(ControllerMixinView.TEMPLATE).data;
+        const templateData = this.state.get(ControllerMixinViewState.TEMPLATE).data;
         templateData.versions = versions;
     }
     async action_read() {
@@ -604,7 +604,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         delete restorePage.id;
         await restorePage.write();
         await trashPage.delete();
-        this.state.set(ControllerMixinCRUDRedirect.REDIRECT, this.state.get(ControllerMixinCRUDRedirect.REDIRECT) || `/admin/${this.controller_slug}/${page.id}`);
+        this.state.set(ControllerMixinCRUDRedirect.REDIRECT, this.state.get(ControllerMixinCRUDRedirect.REDIRECT) || `/admin/${this.controller_slug}/${id}`);
     }
     async action_delete() {
         if (this.state.get(ControllerMixinORMDelete.DELETED)) {

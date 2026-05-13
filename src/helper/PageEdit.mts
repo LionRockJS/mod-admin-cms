@@ -1,6 +1,6 @@
 import {HelperPageText} from "@lionrockjs/mod-cms-read";
 import fs from "node:fs";
-import {Central, Controller} from "@lionrockjs/central";
+import {Central, Controller, ControllerState} from "@lionrockjs/central";
 
 /**
  * Private helper class containing merge utility methods
@@ -26,7 +26,7 @@ class Merger {
     /**
      * Merges basic properties (attributes and pointers) from target and source objects
      */
-    static mergeBasicProps(target = {}, source = {}) {
+    static mergeBasicProps(target: any = {}, source: any = {}) {
         return {
             attributes: {...(target.attributes || {}), ...(source.attributes || {})},
             pointers: {...(target.pointers || {}), ...(source.pointers || {})}
@@ -68,7 +68,7 @@ class Merger {
 
             // Handle nested items if they exist
             if (targetItem.items || sourceItem.items) {
-                mergedItem.items = this.mergeItems(targetItem.items, sourceItem.items);
+                (mergedItem as any).items = this.mergeItems(targetItem.items, sourceItem.items);
             }
 
             result.push(mergedItem);
@@ -182,7 +182,7 @@ export default class HelperPageEdit{
         return result;
     }
 
-    static blueprint(pageType, blueprints={}, defaultLanguage="en"){
+    static blueprint(pageType, blueprints: Record<string, any> = {}, defaultLanguage="en"){
         const original = HelperPageText.defaultOriginal();
         original.values[defaultLanguage] = {};
 
@@ -378,12 +378,12 @@ export default class HelperPageEdit{
     }
 
     static getOriginal(page, attributes={}, state=new Map()){
-        const version = state.get(Controller.STATE_QUERY)?.version;
+        const version = state.get(ControllerState.QUERY)?.version;
 
         if(version){
             const versionFile = `${Central.config.cms.versionPath}/${page.id}/${version}.json`;
             if(fs.existsSync(versionFile)){
-                return JSON.parse(fs.readFileSync(versionFile));
+                return JSON.parse(fs.readFileSync(versionFile).toString());
             }else{
                 throw new Error(`Version ${version} not found`);
             }

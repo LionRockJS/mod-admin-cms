@@ -14,7 +14,7 @@ export default class HelperPageEdit {
         items: any[];
     };
     static definitionInstance(definitions?: any[]): {};
-    static blueprint(pageType: any, blueprints?: {}, defaultLanguage?: string): any;
+    static blueprint(pageType: any, blueprints?: Record<string, any>, defaultLanguage?: string): any;
     static postToOriginal($_POST: any, langauge?: string): any;
     /**
      * Merges two original objects by combining their properties

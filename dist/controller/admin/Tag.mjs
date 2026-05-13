@@ -1,4 +1,4 @@
-import { ControllerMixinDatabase, ControllerMixinView, Central, ORM, ControllerState } from '@lionrockjs/central';
+import { ControllerMixinDatabase, ControllerMixinViewState, Central, ORM, ControllerState } from '@lionrockjs/central';
 import { ControllerAdmin } from '@lionrockjs/mod-admin';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
 import { ControllerMixinORMRead } from '@lionrockjs/mixin-orm';
@@ -44,7 +44,7 @@ export default class ControllerAdminTag extends ControllerAdmin {
         const tag_types = [];
         tag_type_records.forEach(it => tag_types[it.id] = it.name);
         const filters = tag_type_records.map(it => ({ id: it.id, name: it.name }));
-        Object.assign(this.state.get(ControllerMixinView.TEMPLATE).data, {
+        Object.assign(this.state.get(ControllerMixinViewState.TEMPLATE).data, {
             filters,
             tag_types,
             filter_tag_type: parseInt(filter_tag_type || 0),
@@ -54,7 +54,7 @@ export default class ControllerAdminTag extends ControllerAdmin {
     async action_create() {
         const database = this.state.get(ControllerMixinDatabase.DATABASES).get('tag');
         const tag_types = await ORM.readAll(TagType, { database, asArray: true });
-        Object.assign(this.state.get(ControllerMixinView.TEMPLATE).data, {
+        Object.assign(this.state.get(ControllerMixinViewState.TEMPLATE).data, {
             tag_types,
             default_language: Central.config.cms.defaultLanguage,
         });
@@ -74,7 +74,7 @@ export default class ControllerAdminTag extends ControllerAdmin {
         const original = HelperPageText.getOriginal(instance);
         const tokens = HelperPageText.originalToPrint(original, this.state.get(ControllerState.LANGUAGE), Central.config.cms.defaultLanguage).tokens;
         const placeholders = HelperPageText.originalToPrint(original, Central.config.cms.defaultLanguage, Central.config.cms.defaultLanguage).tokens;
-        Object.assign(this.state.get(ControllerMixinView.TEMPLATE).data, {
+        Object.assign(this.state.get(ControllerMixinViewState.TEMPLATE).data, {
             default_language: Central.config.cms.defaultLanguage,
             item: instance,
             tokens,

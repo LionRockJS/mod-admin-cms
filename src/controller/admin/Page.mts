@@ -10,7 +10,7 @@ import {
   ControllerMixinImport
 } from '@lionrockjs/mod-admin';
 
-import {Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM, Model, ControllerState} from '@lionrockjs/central';
+import {Controller, ControllerMixinDatabase, ControllerMixinView, ControllerMixinViewState, Central, ORM, Model, ControllerState} from '@lionrockjs/central';
 import {ControllerMixinORMDelete, ControllerMixinORMRead} from '@lionrockjs/mixin-orm';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
 import {HelperPageText} from "@lionrockjs/mod-cms-read";
@@ -84,7 +84,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     });
 
     Object.assign(
-        this.state.get(ControllerMixinView.TEMPLATE).data,
+        this.state.get(ControllerMixinViewState.TEMPLATE).data,
         { items, page_type }
     );
   }
@@ -95,7 +95,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     const weight = await ORM.countBy(Page, 'page_type', [page_type], {database});
     const insertID = Model.defaultAdapter.defaultID();
-    const page = ORM.create(Page, {database, insertID});
+    const page = ORM.create(Page, {database, insertID}) as any;
     page.name = `Untitled ${pluralize.singular(page_type.replace(/[_-]/gi, ' '))}`;
     page.page_type = page_type;
     page.slug = String(insertID);
@@ -172,7 +172,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
     const $_POST = this.state.get(ControllerMixinMultipartForm.POST_DATA);
 
-    const page = ORM.create(Page, {database});
+    const page = ORM.create(Page, {database}) as any;
     page.page_type = this.page_type;
     page.name = $_POST['.name'] || `Untitled ${this.page_type}`;
     page.slug = slugify(page.name).toLowerCase();
@@ -331,12 +331,12 @@ export default class ControllerAdminPage extends ControllerAdmin {
     await instance.eagerLoad({with:['PageTag']}, {database});
     const databaseTag = this.state.get(ControllerMixinDatabase.DATABASES).get('tag');
     const tagTypes = await ORM.readAll(TagType, {database:databaseTag, asArray:true});
-    const tagTypeMap = new Map(tagTypes.map(it => [it.id, it.name]));
+    const tagTypeMap = new Map((tagTypes as any[]).map(it => [it.id, it.name]));
     instance.page_tags = instance.page_tags || [];
     const tags = await ORM.readBy(Tag, 'id', instance.page_tags.map(it => it.tag_id), {database: databaseTag, asArray:true });
 
     const mergedOriginal = HelperPageEdit.mergeOriginals(original, postOriginal);
-    mergedOriginal.tags = tags.map(tag => HelperPageEdit.getOriginal(tag, {_id: tag.id, _type_id: tag.tag_type_id, _type:tagTypeMap.get(tag.tag_type_id)}));
+    mergedOriginal.tags = (tags as any[]).map(tag => HelperPageEdit.getOriginal(tag, {_id: tag.id, _type_id: tag.tag_type_id, _type:tagTypeMap.get(tag.tag_type_id)}));
 
     instance.original = JSON.stringify(mergedOriginal);
     await instance.write();
@@ -377,7 +377,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
   async updateLiveSchedule(instance){
     const Model = this.state.get(ControllerMixinORMRead.MODEL);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
-    const livePage = await ORM.readBy(Model, 'id', [instance.id], {database, limit: 1, asArray: false});
+    const livePage = await ORM.readBy(Model, 'id', [instance.id], {database, limit: 1, asArray: false}) as any;
     if(!livePage)return;
     if(livePage.start === instance.start && livePage.end === instance.end)return;
 
@@ -398,7 +398,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
   async revert(page){
     const Model = this.state.get(ControllerMixinORMRead.MODEL);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
-    const version = await ORM.factory(Model, page.id, {database});
+    const version = await ORM.factory(Model, page.id, {database}) as any;
     page.original = version.original;
     await page.write();
   }
@@ -409,7 +409,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     //live database always keep minimal content
     //check page exist, remove it.
-    await this.unpublish(page.id, database);
+    await this.unpublish(page.id);
 
     //create live page with page.id
     const livePage = ORM.create(Model, {database, insertID: page.id});
@@ -422,7 +422,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     page.page_tags = page.page_tags || [];
 
     await Promise.all(page.page_tags.map(async it => {
-      const livePageTag = ORM.create(PageTag, {database, insertID: it.id});
+      const livePageTag = ORM.create(PageTag, {database, insertID: it.id}) as any;
       const fields = {...it};
       delete fields.id;
       Object.assign(livePageTag, fields);
@@ -495,7 +495,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
       })
     })
 
-    const templateData = this.state.get(ControllerMixinView.TEMPLATE).data;
+    const templateData = this.state.get(ControllerMixinViewState.TEMPLATE).data;
 
     templateData.tokens       = page.print.tokens;
     templateData.blocks       = page.print.blocks;
@@ -560,7 +560,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
   }
 
   static async resolvePointer(state, original){
-    const Model = this.state.get(ControllerMixinORMRead.MODEL);
+    const Model = state.get(ControllerMixinORMRead.MODEL);
     const database = state.get(ControllerMixinDatabase.DATABASES).get('draft');
     const prints = new Map();
 
@@ -677,9 +677,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
     const templateTags = {}
     const orderBy = new Map([['name', 'ASC']]);
     const tags = await ORM.readAll(Tag, {database:tagDatabase, asArray:true, orderBy});
-    await ORM.eagerLoad(tags, {with:['TagType']}, {database:tagDatabase});
+    await ORM.eagerLoad(tags as any[], {with:['TagType'], database:tagDatabase});
 
-    tags.forEach(tag => {
+    (tags as any[]).forEach(tag => {
       if(pageTagSet.has(tag.id))return;
 
       const print = HelperPageText.originalToPrint(HelperPageEdit.getOriginal(tag), language, Central.config.cms.defaultLanguage, false);
@@ -689,7 +689,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     /** end parse tag **/
     this.setEditTemplate(page, livePage, placeholders, templateTags);
 
-    const templateData = this.state.get(ControllerMixinView.TEMPLATE).data;
+    const templateData = this.state.get(ControllerMixinViewState.TEMPLATE).data;
     templateData.versions = versions;
   }
 
@@ -720,7 +720,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     this.state.set(
       ControllerMixinCRUDRedirect.REDIRECT,
-      this.state.get(ControllerMixinCRUDRedirect.REDIRECT) || `/admin/${this.controller_slug}/${page.id}`);
+      this.state.get(ControllerMixinCRUDRedirect.REDIRECT) || `/admin/${this.controller_slug}/${id}`);
   }
 
   async action_delete(){
@@ -748,7 +748,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
 
     const Model = this.state.get(ControllerMixinORMRead.MODEL);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
-    const page = await ORM.factory(Model, pageId, {database});
+    const page = await ORM.factory(Model, pageId, {database}) as any;
     if(!page) throw new Error(`Page ${pageId} not found`);
     await this.item_add(page, itemName);
 

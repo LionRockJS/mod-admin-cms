@@ -11,6 +11,6 @@ export default class Page extends Model {
     static joinTablePrefix: string;
     static tableName: string;
     static fields: Map<string, string>;
-    static belongsTo: Map<unknown, unknown>;
-    static hasMany: string[][];
+    static belongsTo: Map<string, string>;
+    static hasMany: [string, string][];
 }

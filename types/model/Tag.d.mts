@@ -8,5 +8,5 @@ export default class Tag extends Model {
     static tableName: string;
     static fields: Map<string, string>;
     static belongsTo: Map<string, string>;
-    static hasMany: string[][];
+    static hasMany: [string, string][];
 }

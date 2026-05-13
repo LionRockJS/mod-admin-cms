@@ -1,4 +1,4 @@
-import { Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM, ControllerState } from '@lionrockjs/central';
+import { Controller, ControllerMixinDatabase, ControllerMixinView, ControllerMixinViewState, Central, ORM, ControllerState } from '@lionrockjs/central';
 import { ControllerAdmin } from '@lionrockjs/mod-admin';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
 import { ControllerMixinORMRead } from '@lionrockjs/mixin-orm';
@@ -50,12 +50,12 @@ export default class ControllerAdminTag extends ControllerAdmin{
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('tag');
     const tag_type_records = await ORM.readAll(TagType, {database, asArray:true});
     const tag_types = [];
-    tag_type_records.forEach(it => tag_types[it.id] = it.name);
+    (tag_type_records as any[]).forEach(it => tag_types[it.id] = it.name);
 
-    const filters = tag_type_records.map(it => ({id: it.id, name: it.name}));
+    const filters = (tag_type_records as any[]).map(it => ({id: it.id, name: it.name}));
 
     Object.assign(
-      this.state.get(ControllerMixinView.TEMPLATE).data,
+      this.state.get(ControllerMixinViewState.TEMPLATE).data,
       {
         filters,
         tag_types,
@@ -70,7 +70,7 @@ export default class ControllerAdminTag extends ControllerAdmin{
     const tag_types = await ORM.readAll(TagType, {database, asArray:true});
 
     Object.assign(
-      this.state.get(ControllerMixinView.TEMPLATE).data,
+      this.state.get(ControllerMixinViewState.TEMPLATE).data,
       {
         tag_types,
         default_language: Central.config.cms.defaultLanguage,
@@ -100,7 +100,7 @@ export default class ControllerAdminTag extends ControllerAdmin{
     const placeholders = HelperPageText.originalToPrint(original, Central.config.cms.defaultLanguage, Central.config.cms.defaultLanguage).tokens;
 
     Object.assign(
-      this.state.get(ControllerMixinView.TEMPLATE).data,
+      this.state.get(ControllerMixinViewState.TEMPLATE).data,
       {
         default_language: Central.config.cms.defaultLanguage,
         item: instance,
@@ -108,7 +108,7 @@ export default class ControllerAdminTag extends ControllerAdmin{
         placeholders,
         tag_types,
         autosave: this.state.get(ControllerState.REQUEST).session.autosave,
-        tags : tags.map(tag => {
+        tags : (tags as any[]).map(tag => {
           return {
             id: tag.id,
             name: tag.name,
@@ -124,7 +124,7 @@ export default class ControllerAdminTag extends ControllerAdmin{
     const $_POST = this.state.get(ControllerMixinMultipartForm.POST_DATA);
 
     const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(ControllerState.LANGUAGE));
-    const tag = ORM.create(Tag, {database});
+    const tag = ORM.create(Tag, {database}) as any;
     tag.name = slugify($_POST['.name']).toLowerCase();
     tag.tag_type_id = parseInt($_POST[':tag_type_id']);
     tag.original = JSON.stringify(postOriginal);

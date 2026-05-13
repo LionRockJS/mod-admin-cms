@@ -5,7 +5,7 @@ export default class HelperImporter {
     static ACTION_OVERWRITE: string;
     static ACTION_FORCE_NEW: string;
     static getUpdateSummary(safeFields: any, conflictFields?: any, tagComparison?: any): string;
-    static validateFile(file: any, database: any, uniqueDigestHandler?: (item: any, digest: any) => void, findExistingRecord?: (item: any, database: any) => Promise<void>, configImporter?: {
+    static validateFile(file: any, database: any, uniqueDigestHandler?: (item: any, digest: any) => void, findExistingRecord?: (item: any, database: any) => Promise<any>, configImporter?: {
         attributes: any[];
         values: {};
         items: any[];

@@ -4,5 +4,5 @@ export default class TagType extends Model {
     static joinTablePrefix: string;
     static tableName: string;
     static fields: Map<string, string>;
-    static hasMany: string[][];
+    static hasMany: [string, string][];
 }

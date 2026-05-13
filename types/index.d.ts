@@ -3,11 +3,11 @@ declare const _default: {
     configs: string[];
 };
 export default _default;
-import ControllerAdminPageAPI from "./classes/controller/admin/API.mjs";
-import ControllerAdminPage from "./classes/controller/admin/Page.mjs";
-import ControllerAdminTag from "./classes/controller/admin/Tag.mjs";
-import ModelPage from "./classes/model/Page.mjs";
-import ModelTag from "./classes/model/Tag.mjs";
-import ModelPageTag from "./classes/model/PageTag.mjs";
-import ModelTagType from "./classes/model/TagType.mjs";
+import ControllerAdminPageAPI from "./controller/admin/API.mjs";
+import ControllerAdminPage from "./controller/admin/Page.mjs";
+import ControllerAdminTag from "./controller/admin/Tag.mjs";
+import ModelPage from "./model/Page.mjs";
+import ModelTag from "./model/Tag.mjs";
+import ModelPageTag from "./model/PageTag.mjs";
+import ModelTagType from "./model/TagType.mjs";
 export { ControllerAdminPageAPI, ControllerAdminPage, ControllerAdminTag, ModelPage, ModelPageTag, ModelTag, ModelTagType, };

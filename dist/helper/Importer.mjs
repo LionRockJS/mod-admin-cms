@@ -1,3 +1,4 @@
+// @ts-ignore
 import HelperExcelParser from "../helper/ExcelParser.mjs";
 import { Central, ORM } from "@lionrockjs/central";
 import { HelperPageText } from "@lionrockjs/mod-cms-read";
