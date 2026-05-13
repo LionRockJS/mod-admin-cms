@@ -1,4 +1,4 @@
-import {Controller, ControllerMixinDatabase, Central, ORM} from '@lionrockjs/central';
+import {Controller, ControllerMixinDatabase, Central, ORM, ControllerState} from '@lionrockjs/central';
 import {ControllerAdmin} from '@lionrockjs/mod-admin';
 import {HelperPageText} from "@lionrockjs/mod-cms-read";
 
@@ -21,36 +21,36 @@ export default class ControllerAPI extends ControllerAdmin{
       database: 'draft',
     });
 
-    this.state.get(Controller.STATE_HEADERS)['Content-Type'] = 'application/json';
+    this.state.get(ControllerState.HEADERS)['Content-Type'] = 'application/json';
   }
 
   async action_pages(){
-    const {type} = this.state.get(Controller.STATE_PARAMS);
+    const {type} = this.state.get(ControllerState.PARAMS);
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
 
     const pages = await ORM.readBy(Page, 'page_type', [type], {database, asArray:true, limit:999999});
-    this.state.set(Controller.STATE_BODY, pages.map(page => ({
+    this.state.set(ControllerState.BODY, (pages as any[]).map(page => ({
       page: page.id,
       name: page.name,
     })));
   }
 
   async action_tags(){
-    const {type} = this.state.get(Controller.STATE_PARAMS);
+    const {type} = this.state.get(ControllerState.PARAMS);
 
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('tag');
     const tagType = await ORM.readBy(TagType, 'name', [type], {database, asArray:false, limit: 1});
     if(!tagType){
-      this.state.set(Controller.STATE_BODY, []);
+      this.state.set(ControllerState.BODY, []);
       return;
     }
 
-    await tagType.eagerLoad({with: ['Tag']}, {database});
+    await (tagType as any).eagerLoad({with: ['Tag']}, {database});
 
-    this.state.set(Controller.STATE_BODY, tagType.tags.map(tag => {
+    this.state.set(ControllerState.BODY, (tagType as any).tags.map(tag => {
       const print = HelperPageText.originalToPrint(
         HelperPageText.getOriginal(tag),
-        this.state.get(Controller.STATE_LANGUAGE),
+        this.state.get(ControllerState.LANGUAGE),
         Central.config.cms.defaultLanguage
       );
 
@@ -63,16 +63,16 @@ export default class ControllerAPI extends ControllerAdmin{
 
   async action_add_page_tag(){
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
-    const {page_id, tag_id} = this.state.get(Controller.STATE_PARAMS);
+    const {page_id, tag_id} = this.state.get(ControllerState.PARAMS);
     //check page tag exist
     const exist = await ORM.readWith(PageTag, [['', 'page_id', 'EQUAL', page_id], ['AND', 'tag_id', 'EQUAL', tag_id]], {database, limit: 1, asArray:false});
     if(exist){
-      this.state.set(Controller.STATE_BODY,{
+      this.state.set(ControllerState.BODY,{
         type: 'ADD_PAGE_TAG',
         payload: {
           success: false,
           message: "tag exist",
-          id: exist.id,
+          id: (exist as any).id,
         }
       });
       return;
@@ -86,7 +86,7 @@ export default class ControllerAPI extends ControllerAdmin{
     const page = await ORM.factory(Page, page_id, {database});
     await page.write();
 
-    this.state.set(Controller.STATE_BODY,{
+    this.state.set(ControllerState.BODY,{
       type: 'ADD_PAGE_TAG',
       payload: {
         success: true,
@@ -97,16 +97,16 @@ export default class ControllerAPI extends ControllerAdmin{
 
   async action_delete_page_tag(){
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
-    const {id} = this.state.get(Controller.STATE_PARAMS);
+    const {id} = this.state.get(ControllerState.PARAMS);
     const pageTag = await ORM.factory(PageTag, id, {database});
-    const page_id = pageTag.page_id;
+    const page_id = (pageTag as any).page_id;
 
     await pageTag.delete();
 
     const page = await ORM.factory(Page, page_id, {database});
     await page.write();
 
-    this.state.set(Controller.STATE_BODY, {
+    this.state.set(ControllerState.BODY, {
       type: 'DELETE_PAGE_TAG',
       payload: {
         success: true,

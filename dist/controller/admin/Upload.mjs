@@ -1,6 +1,6 @@
 import { stat, mkdir, copyFile, unlink } from 'node:fs/promises';
 import path from 'node:path';
-import { Controller, ControllerMixinDatabase, ControllerMixinMime, ControllerMixinView, Central } from "@lionrockjs/central";
+import { Controller, ControllerMixinDatabase, ControllerMixinMime, ControllerMixinView, Central, ControllerState } from "@lionrockjs/central";
 import { ControllerMixinLoginRequire } from "@lionrockjs/mod-auth";
 import { ControllerMixinSession } from "@lionrockjs/mixin-session";
 import { ControllerMixinMultipartForm } from "@lionrockjs/mixin-form";
@@ -18,7 +18,7 @@ export default class ControllerAdminUpload extends Controller {
         super(request);
         this.state.set(ControllerMixinLoginRequire.REJECT_LANDING, '/login');
         this.state.set(ControllerMixinLoginRequire.ALLOW_ROLES, new Set(Central.config.cms.uploadRoles));
-        const headers = this.state.get(Controller.STATE_HEADERS);
+        const headers = this.state.get(ControllerState.HEADERS);
         headers['Content-Type'] = 'application/json';
     }
     async action_upload_post() {
@@ -51,7 +51,7 @@ export default class ControllerAdminUpload extends Controller {
             await unlink(fileField.tmp);
             return 'media/' + uploadDirectory + '/' + uploadPath.replaceAll('\\', '/');
         }));
-        this.state.set(Controller.STATE_BODY, {
+        this.state.set(ControllerState.BODY, {
             success: true,
             files: files.filter(it => it !== null)
         });

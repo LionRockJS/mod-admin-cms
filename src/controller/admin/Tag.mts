@@ -1,4 +1,4 @@
-import { Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM } from '@lionrockjs/central';
+import { Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM, ControllerState } from '@lionrockjs/central';
 import { ControllerAdmin } from '@lionrockjs/mod-admin';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
 import { ControllerMixinORMRead } from '@lionrockjs/mixin-orm';
@@ -33,7 +33,7 @@ export default class ControllerAdminTag extends ControllerAdmin{
         ['read', 'templates/admin/tags/edit'],
       ]),
     });
-    this.state.set(Controller.STATE_LANGUAGE, this.state.get(Controller.STATE_LANGUAGE) || Central.config.cms.defaultLanguage || 'en');
+    this.state.set(ControllerState.LANGUAGE, this.state.get(ControllerState.LANGUAGE) || Central.config.cms.defaultLanguage || 'en');
   }
 
   async before(){
@@ -96,7 +96,7 @@ export default class ControllerAdminTag extends ControllerAdmin{
     }
 
     const original = HelperPageText.getOriginal(instance);
-    const tokens = HelperPageText.originalToPrint(original, this.state.get(Controller.STATE_LANGUAGE), Central.config.cms.defaultLanguage).tokens;
+    const tokens = HelperPageText.originalToPrint(original, this.state.get(ControllerState.LANGUAGE), Central.config.cms.defaultLanguage).tokens;
     const placeholders = HelperPageText.originalToPrint(original, Central.config.cms.defaultLanguage, Central.config.cms.defaultLanguage).tokens;
 
     Object.assign(
@@ -107,7 +107,7 @@ export default class ControllerAdminTag extends ControllerAdmin{
         tokens,
         placeholders,
         tag_types,
-        autosave: this.state.get(Controller.STATE_REQUEST).session.autosave,
+        autosave: this.state.get(ControllerState.REQUEST).session.autosave,
         tags : tags.map(tag => {
           return {
             id: tag.id,
@@ -123,7 +123,7 @@ export default class ControllerAdminTag extends ControllerAdmin{
     const database = this.state.get(ControllerMixinDatabase.DATABASES).get('tag');
     const $_POST = this.state.get(ControllerMixinMultipartForm.POST_DATA);
 
-    const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
+    const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(ControllerState.LANGUAGE));
     const tag = ORM.create(Tag, {database});
     tag.name = slugify($_POST['.name']).toLowerCase();
     tag.tag_type_id = parseInt($_POST[':tag_type_id']);
@@ -143,7 +143,7 @@ export default class ControllerAdminTag extends ControllerAdmin{
 
     const mergeOriginal = HelperPageEdit.mergeOriginals(
       original,
-      HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE))
+      HelperPageEdit.postToOriginal($_POST, this.state.get(ControllerState.LANGUAGE))
     )
     
     instance.original = JSON.stringify(mergeOriginal);
@@ -154,7 +154,7 @@ export default class ControllerAdminTag extends ControllerAdmin{
 
   async action_delete(){
     if(this.state.get('deleted')){
-      const { id } = this.state.get(Controller.STATE_PARAMS);
+      const { id } = this.state.get(ControllerState.PARAMS);
       const databases = this.state.get(ControllerMixinDatabase.DATABASES);
       await ORM.deleteBy(PageTag, 'tag_id', [id], {database:databases.get('draft')});
       await ORM.deleteBy(PageTag, 'tag_id', [id], {database:databases.get('live')})

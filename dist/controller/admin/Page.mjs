@@ -3,7 +3,7 @@ import path from "node:path";
 import fs from 'node:fs';
 import { stat, mkdir, readFile, readdir } from 'node:fs/promises';
 import { ControllerAdmin, ControllerMixinAdminTemplates, ControllerMixinCRUDRedirect, ControllerMixinImport } from '@lionrockjs/mod-admin';
-import { Controller, ControllerMixinDatabase, ControllerMixinView, Central, ORM, Model } from '@lionrockjs/central';
+import { ControllerMixinDatabase, ControllerMixinView, Central, ORM, Model, ControllerState } from '@lionrockjs/central';
 import { ControllerMixinORMDelete, ControllerMixinORMRead } from '@lionrockjs/mixin-orm';
 import { ControllerMixinMultipartForm } from '@lionrockjs/mixin-form';
 import { HelperPageText } from "@lionrockjs/mod-cms-read";
@@ -41,8 +41,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
             controller_slug: 'pages',
             ...options,
         });
-        this.state.set(Controller.STATE_LANGUAGE, this.state.get(Controller.STATE_LANGUAGE) || Central.config.cms.defaultLanguage || 'en');
-        this.page_type = this.state.get(Controller.STATE_PARAMS).page_type || this.options.page_type;
+        this.state.set(ControllerState.LANGUAGE, this.state.get(ControllerState.LANGUAGE) || Central.config.cms.defaultLanguage || 'en');
+        this.page_type = this.state.get(ControllerState.PARAMS).page_type || this.options.page_type;
         this.controller_slug = this.options.controller_slug;
         this.state.set(ControllerMixinImport.UNIQUE_KEY, 'slug');
         this.state.set(ControllerMixinORMRead.LIST_FILTER, [['AND', 'page_type', 'EQUAL', this.page_type]]);
@@ -76,7 +76,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         page.weight = weight + 1;
         const defaultOriginal = HelperPageEdit.blueprint(page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage || 'en');
         page.original = JSON.stringify(defaultOriginal);
-        page.print = HelperPageText.originalToPrint(defaultOriginal, this.state.get(Controller.STATE_LANGUAGE), Central.config.cms.defaultLanguage);
+        page.print = HelperPageText.originalToPrint(defaultOriginal, this.state.get(ControllerState.LANGUAGE), Central.config.cms.defaultLanguage);
         page.id = `new_post/${page_type}`;
         this.state.set('instance', page);
         await ControllerMixinAdminTemplates.action_edit(this.state);
@@ -88,8 +88,8 @@ export default class ControllerAdminPage extends ControllerAdmin {
     async action_search() {
         const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
         const page_type = this.page_type;
-        const query = this.state.get(Controller.STATE_QUERY).search;
-        const page = parseInt(this.state.get(Controller.STATE_QUERY).page ?? '1', 10) - 1;
+        const query = this.state.get(ControllerState.QUERY).search;
+        const page = parseInt(this.state.get(ControllerState.QUERY).page ?? '1', 10) - 1;
         const offset = page * this.options.limit;
         const instances = await ORM.readWith(Page, [['', 'page_type', 'EQUAL', page_type], ['AND', 'name', 'LIKE', `%${query}%`]], { database, asArray: true });
         this.state.set('instances', instances);
@@ -264,9 +264,9 @@ export default class ControllerAdminPage extends ControllerAdmin {
                 instance.slug = slugify(instance.slug).toLowerCase().trim();
             }
         }
-        const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(Controller.STATE_LANGUAGE));
+        const postOriginal = HelperPageEdit.postToOriginal($_POST, this.state.get(ControllerState.LANGUAGE));
         // modified_by is always current user
-        postOriginal.attributes._modified_by = this.state.get(Controller.STATE_REQUEST).session?.user_meta?.full_name ?? '';
+        postOriginal.attributes._modified_by = this.state.get(ControllerState.REQUEST).session?.user_meta?.full_name ?? '';
         const original = HelperPageEdit.getOriginal(instance);
         this.state.set(ControllerAdminPage.STATE_ORIGINAL_SNAPSHOT, HelperPageEdit.getOriginal(instance));
         this.state.set(ControllerAdminPage.STATE_POST_ORIGINAL, postOriginal);
@@ -363,7 +363,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         }));
     }
     async action_unpublish() {
-        const { id } = this.state.get(Controller.STATE_PARAMS);
+        const { id } = this.state.get(ControllerState.PARAMS);
         await this.unpublish(id);
         this.state.set(ControllerMixinCRUDRedirect.REDIRECT, this.state.get(ControllerMixinCRUDRedirect.REDIRECT) || `/admin/${this.controller_slug}/${id}`);
     }
@@ -427,7 +427,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         templateData.tokens = page.print.tokens;
         templateData.blocks = page.print.blocks;
         templateData.block_names = Object.keys(Central.config.cms.blocks) || [];
-        templateData.language = this.state.get(Controller.STATE_LANGUAGE);
+        templateData.language = this.state.get(ControllerState.LANGUAGE);
         templateData.default_language = Central.config.cms.defaultLanguage || 'en';
         templateData.placeholders = placeholders;
         templateData.published = !!livePage;
@@ -490,7 +490,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
                 const original = HelperPageEdit.getOriginal(page);
                 original.items = {};
                 original.blocks = [];
-                print = HelperPageText.originalToPrint(original, state.get(Controller.STATE_LANGUAGE), Central.config.cms.defaultLanguage, false);
+                print = HelperPageText.originalToPrint(original, state.get(ControllerState.LANGUAGE), Central.config.cms.defaultLanguage, false);
                 print.tokens.id = page.id;
                 prints.set(pageId, print);
             }
@@ -512,7 +512,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
                         const original = HelperPageEdit.getOriginal(page);
                         original.items = {};
                         original.blocks = [];
-                        print = HelperPageText.originalToPrint(original, state.get(Controller.STATE_LANGUAGE), Central.config.cms.defaultLanguage, false);
+                        print = HelperPageText.originalToPrint(original, state.get(ControllerState.LANGUAGE), Central.config.cms.defaultLanguage, false);
                         print.tokens.id = page.id;
                         prints.set(pageId, print);
                     }
@@ -529,12 +529,12 @@ export default class ControllerAdminPage extends ControllerAdmin {
         const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
         const liveDatabase = this.state.get(ControllerMixinDatabase.DATABASES).get('live');
         const tagDatabase = this.state.get(ControllerMixinDatabase.DATABASES).get('tag');
-        const language = this.state.get(Controller.STATE_LANGUAGE);
+        const language = this.state.get(ControllerState.LANGUAGE);
         const page = this.state.get('instance');
         const Model = this.state.get(ControllerMixinORMRead.MODEL);
         const livePage = await ORM.readBy(Model, 'id', [page.id], { database: liveDatabase, limit: 1, asArray: false });
         //if querystring have version, original use version from file
-        const version = this.state.get(Controller.STATE_QUERY).version;
+        const version = this.state.get(ControllerState.QUERY).version;
         if (version) {
             const versionPath = `${Central.config.cms.versionPath}/${page.id}/${version}.json`;
             page.original = await readFile(versionPath, 'utf8');
@@ -547,7 +547,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         const original = HelperPageEdit.getOriginal(page, {}, this.state);
         const defaultOriginal = HelperPageEdit.blueprint(page.page_type, Central.config.cms.blueprint, Central.config.cms.defaultLanguage);
         //resolve pointer with print
-        await HelperPageText.resolvePointer(database, original, this.state.get(Controller.STATE_LANGUAGE));
+        await HelperPageText.resolvePointer(database, original, this.state.get(ControllerState.LANGUAGE));
         page.print = HelperPageText.originalToPrint(HelperPageEdit.mergeOriginals(defaultOriginal, original), language, null, false);
         const placeholders = HelperPageText.originalToPrint(original, language, Central.config.cms.defaultLanguage, false);
         /** parse tags across database **/
@@ -592,7 +592,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
     }
     async action_restore() {
         const Model = this.state.get(ControllerMixinORMRead.MODEL);
-        const { id } = this.state.get(Controller.STATE_PARAMS);
+        const { id } = this.state.get(ControllerState.PARAMS);
         const databases = this.state.get(ControllerMixinDatabase.DATABASES);
         const dbTrash = databases.get('trash');
         const dbDraft = databases.get('draft');
@@ -621,7 +621,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         }
     }
     async action_add_item() {
-        const { page_id: pageId, item_name: itemName } = this.state.get(Controller.STATE_PARAMS);
+        const { page_id: pageId, item_name: itemName } = this.state.get(ControllerState.PARAMS);
         const Model = this.state.get(ControllerMixinORMRead.MODEL);
         const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
         const page = await ORM.factory(Model, pageId, { database });
@@ -632,7 +632,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         await this.redirect(`/admin/pages/${page.id}`, true);
     }
     async action_delete_item() {
-        const { page_id: pageId, item_name: itemName, index: itemIndex } = this.state.get(Controller.STATE_PARAMS);
+        const { page_id: pageId, item_name: itemName, index: itemIndex } = this.state.get(ControllerState.PARAMS);
         const Model = this.state.get(ControllerMixinORMRead.MODEL);
         const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
         const page = await ORM.factory(Model, pageId, { database });
@@ -784,7 +784,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         await page.write();
     }
     async action_add_block() {
-        const { page_id: pageId, block_name: blockName } = this.state.get(Controller.STATE_PARAMS);
+        const { page_id: pageId, block_name: blockName } = this.state.get(ControllerState.PARAMS);
         const Model = this.state.get(ControllerMixinORMRead.MODEL);
         const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
         const page = await ORM.factory(Model, pageId, { database });
@@ -794,7 +794,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         await this.redirect(`/admin/pages/${pageId}`, true);
     }
     async action_delete_block() {
-        const { page_id: pageId, index: blockIndex } = this.state.get(Controller.STATE_PARAMS);
+        const { page_id: pageId, index: blockIndex } = this.state.get(ControllerState.PARAMS);
         const Model = this.state.get(ControllerMixinORMRead.MODEL);
         const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
         const page = await ORM.factory(Model, pageId, { database });
@@ -804,7 +804,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         await this.redirect(`/admin/${this.controller_slug}/${pageId}`, true);
     }
     async action_add_block_item() {
-        const { page_id: pageId, block_index: blockIndex, item_name: itemName } = this.state.get(Controller.STATE_PARAMS);
+        const { page_id: pageId, block_index: blockIndex, item_name: itemName } = this.state.get(ControllerState.PARAMS);
         const Model = this.state.get(ControllerMixinORMRead.MODEL);
         const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
         const page = await ORM.factory(Model, pageId, { database });
@@ -812,7 +812,7 @@ export default class ControllerAdminPage extends ControllerAdmin {
         await this.redirect(`/admin/${this.controller_slug}/${pageId}`, true);
     }
     async action_delete_block_item() {
-        const { page_id: pageId, block_index: blockIndex, item_name: itemName, index: itemIndex } = this.state.get(Controller.STATE_PARAMS);
+        const { page_id: pageId, block_index: blockIndex, item_name: itemName, index: itemIndex } = this.state.get(ControllerState.PARAMS);
         const Model = this.state.get(ControllerMixinORMRead.MODEL);
         const database = this.state.get(ControllerMixinDatabase.DATABASES).get('draft');
         const page = await ORM.factory(Model, pageId, { database });
