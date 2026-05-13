@@ -27,7 +27,7 @@ export default class ControllerAdminUpload extends Controller {
         if (uploadDirectory.includes('../'))
             throw new Error('upload directory cannot contain ../');
         const today = new Date();
-        const uploadFolder = path.normalize(`${Central.EXE_PATH}/../public/media/${uploadDirectory}`);
+        const uploadFolder = `public/media/${uploadDirectory}`;
         const dateFolder = path.normalize(`${today.getFullYear()}/${today.getMonth() + 1}/${today.getDate()}`);
         const uploadDateFolder = path.normalize(uploadFolder + '/' + dateFolder);
         //create folder

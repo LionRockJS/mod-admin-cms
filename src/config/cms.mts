@@ -4,12 +4,12 @@ export default {
   timezone: '+0800',
   landing: '',
   databaseMap: new Map([
-    ['draft', `${Central.APP_PATH}/../database/content.sqlite`],
-    ['live', `${Central.APP_PATH}/../database/www/content.sqlite`],
-    ['trash', `${Central.APP_PATH}/../database/trash/content.sqlite`],
-    ['tag', `${Central.APP_PATH}/../database/www/tag.sqlite`],
+    ['draft', 'database/content.sqlite'],
+    ['live', 'database/www/content.sqlite'],
+    ['trash', 'database/trash/content.sqlite'],
+    ['tag', 'database/www/tag.sqlite'],
   ]),
-  versionPath: `${Central.APP_PATH}/../database/versions`,
+  versionPath: 'database/versions',
   defaultLanguage: 'en',
   languages: ['en', 'zh-hant'],
   blueprint: {

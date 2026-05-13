@@ -1,6 +1,9 @@
+import ConfigCms from './config/cms.mjs';
+
 export default {
-  filename: import.meta.url,
-  configs: ['cms']
+  configs: {
+    cms: ConfigCms,
+  }
 }
 
 import ControllerAdminPageAPI from "./controller/admin/API.mjs";
