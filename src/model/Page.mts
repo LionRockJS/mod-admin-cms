@@ -23,9 +23,9 @@ export default class Page extends Model{
     ["current_page_version_id", "Int"],
     ["original", "String"]
   ]);
-  static belongsTo = new Map([
+  static belongsTo: Map<string, string> = new Map([
   ]);
-  static hasMany = [
+  static hasMany: [string, string][] = [
     ["page_id", "PageTag"]
   ];
 }

@@ -9,7 +9,7 @@ export default class TagType extends Model{
   static fields = new Map([
     ["name", "String!"]
   ]);
-  static hasMany = [
+  static hasMany: [string, string][] = [
     ["tag_type_id", "Tag"]
   ];
 }
