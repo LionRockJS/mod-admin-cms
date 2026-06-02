@@ -14,11 +14,26 @@ export default class HelperPageEdit {
         items: any[];
     };
     static definitionInstance(definitions?: any[]): {};
-    static blueprint(pageType: any, blueprints?: Record<string, any>, defaultLanguage?: string): any;
-    static postToOriginal($_POST: any, langauge?: string): any;
+    static blueprint(pageType: any, blueprints?: Record<string, any>, defaultLanguage?: string): {
+        items: {};
+        attributes: {};
+        pointers: {};
+        values: {};
+    };
+    static postToOriginal($_POST: any, langauge?: string): {
+        items: {};
+        attributes: {};
+        pointers: {};
+        values: {};
+    };
     /**
      * Merges two original objects by combining their properties
      */
-    static mergeOriginals(target: any, source: any): any;
+    static mergeOriginals(target: any, source: any): {
+        items: {};
+        attributes: {};
+        pointers: {};
+        values: {};
+    };
     static getOriginal(page: any, attributes?: {}, state?: Map<any, any>): any;
 }

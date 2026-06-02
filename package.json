@@ -1,9 +1,10 @@
 {
   "type": "module",
   "name": "@lionrockjs/mod-admin-cms",
-  "version": "0.0.84",
+  "version": "2.0.0",
   "description": "The CMS module for LionRockJS",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "types/index.d.ts",
   "scripts": {
     "test": "node --experimental-vm-modules ../../../node_modules/jest/bin/jest.js --coverage"
   },
